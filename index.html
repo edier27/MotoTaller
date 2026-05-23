@@ -1424,6 +1424,18 @@ let editProductId = null;
 // ─── PERSISTENCIA localStorage ────────────────────
 const STORAGE_KEY = 'mototaller_v1';
 
+// ─── PROTECCIÓN DE DATOS ─────────────────────────────────
+var _motoSessionId = localStorage.getItem('moto_sid_v1');
+if(!_motoSessionId){ _motoSessionId = Math.random().toString(36).slice(2,10); localStorage.setItem('moto_sid_v1',_motoSessionId); }
+var _motoLastSaveTs = (function(){
+  try { return parseInt(localStorage.getItem(STORAGE_KEY+'_ts')||'0',10); } catch(e){ return 0; }
+})();
+
+// ─── PROTECCIÓN DE DATOS ─────────────────────────────────
+var _motoSessionId = localStorage.getItem('moto_sid_v1');
+if(!_motoSessionId){ _motoSessionId = Math.random().toString(36).slice(2,10); localStorage.setItem('moto_sid_v1',_motoSessionId); }
+var _motoLastSaveTs = 0;
+
 // ── LIMPIEZA ÚNICA: borra datos de demo guardados en el navegador ──
 // Esto corre una sola vez. Preserva las credenciales del admin.
 (function limpiarDatosDemo() {
@@ -1465,37 +1477,68 @@ function loadState() {
       };
     }
   } catch(e) { console.warn('Error cargando datos locales:', e); }
+  // Sin datos locales — arrancar vacío (NUNCA con datos demo)
   return {
     products: [], transactions: [], services: [],
     employees: [], cart: [], importHistory: [], activities: []
   };
 }
 
-// Cargar desde Firebase al iniciar (asíncrono — actualiza si hay datos más recientes)
+// Sincronización Firebase con protección total de datos
 function loadFromFirebase() {
   if (!window.__motoFirebaseOK || !window.__motoDB) return;
-  window.__motoDB.get().then(function(doc) {
+
+  // ── localStorage es la fuente de verdad ABSOLUTA ──
+  var _hasLocalData = (state.products.length > 0 || state.transactions.length > 0 ||
+                       state.services.length > 0 || state.employees.length > 0 ||
+                       state.activities.length > 0);
+
+  if (_hasLocalData) {
+    // Tenemos datos locales → subir a Firebase como respaldo, ignorar Firebase entrante
+    var _syncData = {
+      products: state.products, transactions: state.transactions,
+      services: state.services, employees: state.employees,
+      importHistory: state.importHistory, activities: state.activities
+    };
+    window.__motoDB.set({
+      appData: JSON.stringify(_syncData),
+      updatedAt: new Date().toISOString(),
+      savedBy: _motoSessionId
+    }).catch(function(e){ console.warn('[MOTO] Error subiendo a Firebase:', e); });
+  }
+
+  // onSnapshot: solo aplica si NO hay datos locales (dispositivo nuevo)
+  var _fbApplied = false;
+  window.__motoDB.onSnapshot(function(doc) {
+    // Si hay datos locales — Firebase no puede sobreescribir NUNCA
+    if (_hasLocalData) return;
+    if (_fbApplied) return;
+    if (doc.exists && doc.data().savedBy === _motoSessionId) return;
+
     if (doc.exists && doc.data().appData) {
       try {
-        const saved = JSON.parse(doc.data().appData);
-        // Actualizar state con datos de Firebase
-        state.products      = (saved.products||[]).map(function(p,i){ if(!p.id) p.id='P_'+i; return p; });
-        state.transactions  = saved.transactions  || [];
-        state.services      = saved.services      || [];
-        state.employees     = (saved.employees||[]).map(function(e,i){ if(!e.id) e.id='E_'+i; return e; });
-        state.importHistory = saved.importHistory || [];
-        state.activities    = saved.activities    || [];
-        // También actualizar localStorage con datos frescos de Firebase
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-        // Re-renderizar la vista actual
-        if (typeof renderCurrentView === 'function') renderCurrentView();
-        console.log('✅ Datos cargados desde Firebase');
-      } catch(e) { console.warn('Error procesando datos de Firebase:', e); }
+        var saved = JSON.parse(doc.data().appData);
+        if (!saved) return;
+        state.products      = (saved.products      || []).map(function(p,i){ if(!p.id) p.id='P_'+i; return p; });
+        state.transactions  = (saved.transactions  || []);
+        state.services      = (saved.services      || []);
+        state.employees     = (saved.employees     || []);
+        state.importHistory = (saved.importHistory || []);
+        state.activities    = (saved.activities    || []);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); } catch(e){}
+        _fbApplied    = true;
+        _hasLocalData = true;
+        _motoLastSaveTs = Date.now();
+        console.log('[MOTO] Datos cargados desde Firebase (dispositivo nuevo)');
+        if (typeof renderApp === 'function') renderApp();
+        else if (typeof goPage === 'function') goPage('dashboard');
+      } catch(e){ console.warn('[MOTO] Error leyendo Firebase:', e); }
     } else if (!doc.exists) {
-      // Primera vez: subir datos locales a Firebase
-      saveState();
+      _fbApplied = true;
     }
-  }).catch(function(e) { console.warn('Error leyendo Firebase:', e); });
+  }, function(err){
+    console.warn('[MOTO] Firebase no disponible, modo offline:', err);
+  });
 }
 
 function saveState() {
@@ -1508,19 +1551,50 @@ function saveState() {
       importHistory: state.importHistory,
       activities:    state.activities,
     };
-    // Guardar en localStorage (respaldo local)
+    // Guardar en localStorage primero (instantáneo)
+    _motoLastSaveTs = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    // Guardar en Firebase (nube automática)
+    localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
+    localStorage.setItem('moto_sid_v1', _motoSessionId);
+    // Guardar en Firebase con sessionId (evita eco)
     if (window.__motoFirebaseOK && window.__motoDB) {
       window.__motoDB.set({
         appData: JSON.stringify(data),
-        updatedAt: new Date().toISOString()
-      }).catch(function(e) { console.warn('Error guardando en Firebase:', e); });
+        updatedAt: new Date().toISOString(),
+        savedBy: _motoSessionId
+      }).catch(function(e) {
+        console.warn('[MOTO] Sin internet — guardado pendiente para sincronizar', e);
+        try { localStorage.setItem('moto_pending_sync', '1'); } catch(err){}
+      });
     }
     const ind = document.getElementById('save-indicator');
     if(ind){ ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0.7',800); }
   } catch(e) { console.warn('Error guardando datos:', e); }
 }
+
+// ── AUTO-SYNC cuando vuelve el internet ─────────────────────
+(function() {
+  function syncPending() {
+    if (!localStorage.getItem('moto_pending_sync')) return;
+    if (!window.__motoFirebaseOK || !window.__motoDB) return;
+    try {
+      var stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      var d = JSON.parse(stored);
+      window.__motoDB.set({
+        appData: JSON.stringify(d),
+        updatedAt: new Date().toISOString(),
+        savedBy: _motoSessionId
+      }).then(function() {
+        localStorage.removeItem('moto_pending_sync');
+        console.log('[MOTO] ✅ Datos sincronizados automáticamente al recuperar internet');
+      }).catch(function(e){ console.warn('[MOTO] Reintento fallido:', e); });
+    } catch(e){}
+  }
+  window.addEventListener('online', syncPending);
+  // Intentar al cargar por si ya hay pendientes y hay internet
+  if (navigator.onLine) setTimeout(syncPending, 2000);
+})();
 
 function exportBackup() {
   const data = JSON.stringify({
