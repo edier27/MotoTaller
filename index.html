@@ -18,12 +18,16 @@
         messagingSenderId: "779307465490",
         appId: "1:779307465490:web:848a554272501bbaf251cb"
       };
-      // Usar app secundaria para no conflicto con TechRepair Pro
+      // App secundaria para datos de mototaller
       var _motoApp = firebase.apps.find(function(a){ return a.name === 'motoapp'; });
       if (!_motoApp) _motoApp = firebase.initializeApp(_fbConfig, 'motoapp');
       var __motoDB = _motoApp.firestore().collection("mototaller").doc("main");
       window.__motoDB = __motoDB;
       window.__motoFirebaseOK = true;
+      // App principal para licencias (comparte trp_users con ACCE PRO)
+      var _mainApp = firebase.apps.find(function(a){ return a.name === '[DEFAULT]' || a.name === 'default'; });
+      if (!_mainApp) _mainApp = firebase.initializeApp(_fbConfig);
+      window.__licDB = _mainApp.firestore();
     } catch(e) {
       window.__motoFirebaseOK = false;
       window.__motoDB = null;
@@ -286,8 +290,54 @@
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
+<!-- PANTALLA DE LICENCIA -->
+<div id="license-screen" style="display:none;position:fixed;inset:0;background:#090E1A;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;font-family:Inter,sans-serif">
+  <div style="background:#0F1729;border:1px solid #1E2D45;border-radius:20px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:Rajdhani,sans-serif;font-size:32px;font-weight:700;color:#10E08A;letter-spacing:2px">⚙ FERNEYMOTOS</div>
+      <div style="color:#7A8EAA;font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:1px">Sistema de Gestión — Activación</div>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;background:#141E32;border-radius:12px;padding:4px;gap:4px;margin-bottom:24px" id="lic-tabs">
+      <button onclick="motoShowTab('login')" id="tab-login" style="flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:700;font-size:14px;background:#10E08A;color:#0D1B35;transition:all 0.15s">Iniciar Sesión</button>
+      <button onclick="motoShowTab('register')" id="tab-register" style="flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:700;font-size:14px;background:transparent;color:#7A8EAA;transition:all 0.15s">Crear Cuenta</button>
+    </div>
+    <!-- Login tab -->
+    <div id="lic-panel-login">
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Usuario</label>
+        <input id="moto-login-user" type="text" placeholder="Tu usuario" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Contraseña</label>
+        <input id="moto-login-pass" type="password" placeholder="••••••" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+      </div>
+      <button onclick="motoDoLogin()" style="width:100%;padding:14px;background:#10E08A;border:none;border-radius:12px;color:#0D1B35;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Entrar al Sistema</button>
+      <div id="moto-login-error" style="color:#EF4444;font-size:13px;text-align:center;margin-top:12px;display:none"></div>
+    </div>
+    <!-- Register tab -->
+    <div id="lic-panel-register" style="display:none">
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Código de Activación</label>
+        <input id="moto-reg-code" type="text" placeholder="Ej: PRO-XXXXX-YYYYY" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#10E08A;font-size:15px;font-weight:700;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Usuario</label>
+        <input id="moto-reg-user" type="text" placeholder="Elige un usuario" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Contraseña</label>
+        <input id="moto-reg-pass" type="password" placeholder="Mínimo 4 caracteres" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+      </div>
+      <button onclick="motoDoRegister()" style="width:100%;padding:14px;background:#10E08A;border:none;border-radius:12px;color:#0D1B35;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Crear Cuenta</button>
+      <div id="moto-reg-error" style="color:#EF4444;font-size:13px;text-align:center;margin-top:12px;display:none"></div>
+    </div>
+    <div style="text-align:center;margin-top:20px;color:#7A8EAA;font-size:11px">FerneyMotos · GlobalAcce · Software para talleres</div>
+  </div>
+</div>
+
+<!-- LOGIN (original - ahora oculto, reemplazado por pantalla de licencia) -->
+<div id="login-screen" style="display:none">
   <div class="login-box">
     <div class="login-logo">⚙ FERNEYMOTOS</div>
     <div class="login-sub">Sistema de Gestión Integral</div>
@@ -1427,9 +1477,7 @@ const STORAGE_KEY = 'mototaller_v1';
 // ─── PROTECCIÓN DE DATOS ─────────────────────────────────
 var _motoSessionId = localStorage.getItem('moto_sid_v1');
 if(!_motoSessionId){ _motoSessionId = Math.random().toString(36).slice(2,10); localStorage.setItem('moto_sid_v1',_motoSessionId); }
-var _motoLastSaveTs = (function(){
-  try { return parseInt(localStorage.getItem(STORAGE_KEY+'_ts')||'0',10); } catch(e){ return 0; }
-})();
+var _motoLastSaveTs = 0;
 
 // ─── PROTECCIÓN DE DATOS ─────────────────────────────────
 var _motoSessionId = localStorage.getItem('moto_sid_v1');
@@ -1487,58 +1535,49 @@ function loadState() {
 // Sincronización Firebase con protección total de datos
 function loadFromFirebase() {
   if (!window.__motoFirebaseOK || !window.__motoDB) return;
-
-  // ── localStorage es la fuente de verdad ABSOLUTA ──
-  var _hasLocalData = (state.products.length > 0 || state.transactions.length > 0 ||
-                       state.services.length > 0 || state.employees.length > 0 ||
-                       state.activities.length > 0);
-
-  if (_hasLocalData) {
-    // Tenemos datos locales → subir a Firebase como respaldo, ignorar Firebase entrante
-    var _syncData = {
-      products: state.products, transactions: state.transactions,
-      services: state.services, employees: state.employees,
-      importHistory: state.importHistory, activities: state.activities
-    };
-    window.__motoDB.set({
-      appData: JSON.stringify(_syncData),
-      updatedAt: new Date().toISOString(),
-      savedBy: _motoSessionId
-    }).catch(function(e){ console.warn('[MOTO] Error subiendo a Firebase:', e); });
-  }
-
-  // onSnapshot: solo aplica si NO hay datos locales (dispositivo nuevo)
-  var _fbApplied = false;
+  // Marcar timestamp actual para proteger datos locales
+  _motoLastSaveTs = Date.now();
+  // Usar onSnapshot para sync en tiempo real
   window.__motoDB.onSnapshot(function(doc) {
-    // Si hay datos locales — Firebase no puede sobreescribir NUNCA
-    if (_hasLocalData) return;
-    if (_fbApplied) return;
+    // Ignorar nuestros propios saves (evitar eco)
     if (doc.exists && doc.data().savedBy === _motoSessionId) return;
-
+    var fbTs = (doc.exists && doc.data().updatedAt) ? new Date(doc.data().updatedAt).getTime() : 0;
+    // Solo aplicar si Firebase es más reciente que nuestro último guardado
+    if (fbTs <= _motoLastSaveTs) {
+      if (!doc.exists) {
+        // Firebase vacío — subir datos locales si existen
+        if (state.products.length > 0 || state.transactions.length > 0) {
+          saveState();
+        }
+      }
+      return;
+    }
     if (doc.exists && doc.data().appData) {
       try {
-        var saved = JSON.parse(doc.data().appData);
-        if (!saved) return;
-        state.products      = (saved.products      || []).map(function(p,i){ if(!p.id) p.id='P_'+i; return p; });
-        state.transactions  = (saved.transactions  || []);
-        state.services      = (saved.services      || []);
-        state.employees     = (saved.employees     || []);
-        state.importHistory = (saved.importHistory || []);
-        state.activities    = (saved.activities    || []);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); } catch(e){}
-        _fbApplied    = true;
-        _hasLocalData = true;
-        _motoLastSaveTs = Date.now();
-        console.log('[MOTO] Datos cargados desde Firebase (dispositivo nuevo)');
-        if (typeof renderApp === 'function') renderApp();
-        else if (typeof goPage === 'function') goPage('dashboard');
-      } catch(e){ console.warn('[MOTO] Error leyendo Firebase:', e); }
-    } else if (!doc.exists) {
-      _fbApplied = true;
+        const saved = JSON.parse(doc.data().appData);
+        // Protección: no aplicar si Firebase tiene menos datos
+        if ((saved.products||[]).length < state.products.length) {
+          console.warn('[MOTO] Firebase tiene menos productos — ignorado');
+          return;
+        }
+        if ((saved.transactions||[]).length < state.transactions.length) {
+          console.warn('[MOTO] Firebase tiene menos transacciones — ignorado');
+          return;
+        }
+        state.products      = (saved.products||[]).map(function(p,i){ if(!p.id) p.id='P_'+i; return p; });
+        state.transactions  = saved.transactions  || [];
+        state.services      = saved.services      || [];
+        state.employees     = (saved.employees||[]).map(function(e,i){ if(!e.id) e.id='E_'+i; return e; });
+        state.importHistory = saved.importHistory || [];
+        state.activities    = saved.activities    || [];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        localStorage.setItem(STORAGE_KEY + '_ts', fbTs.toString());
+        _motoLastSaveTs = fbTs;
+        if (typeof renderCurrentView === 'function') renderCurrentView();
+        console.log('[MOTO] Datos sincronizados desde otro dispositivo');
+      } catch(e) { console.warn('Error procesando Firebase:', e); }
     }
-  }, function(err){
-    console.warn('[MOTO] Firebase no disponible, modo offline:', err);
-  });
+  }, function(e) { console.warn('Error listener Firebase moto:', e); });
 }
 
 function saveState() {
@@ -1562,39 +1601,12 @@ function saveState() {
         appData: JSON.stringify(data),
         updatedAt: new Date().toISOString(),
         savedBy: _motoSessionId
-      }).catch(function(e) {
-        console.warn('[MOTO] Sin internet — guardado pendiente para sincronizar', e);
-        try { localStorage.setItem('moto_pending_sync', '1'); } catch(err){}
-      });
+      }).catch(function(e) { console.warn('Error guardando en Firebase:', e); });
     }
     const ind = document.getElementById('save-indicator');
     if(ind){ ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0.7',800); }
   } catch(e) { console.warn('Error guardando datos:', e); }
 }
-
-// ── AUTO-SYNC cuando vuelve el internet ─────────────────────
-(function() {
-  function syncPending() {
-    if (!localStorage.getItem('moto_pending_sync')) return;
-    if (!window.__motoFirebaseOK || !window.__motoDB) return;
-    try {
-      var stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return;
-      var d = JSON.parse(stored);
-      window.__motoDB.set({
-        appData: JSON.stringify(d),
-        updatedAt: new Date().toISOString(),
-        savedBy: _motoSessionId
-      }).then(function() {
-        localStorage.removeItem('moto_pending_sync');
-        console.log('[MOTO] ✅ Datos sincronizados automáticamente al recuperar internet');
-      }).catch(function(e){ console.warn('[MOTO] Reintento fallido:', e); });
-    } catch(e){}
-  }
-  window.addEventListener('online', syncPending);
-  // Intentar al cargar por si ya hay pendientes y hay internet
-  if (navigator.onLine) setTimeout(syncPending, 2000);
-})();
 
 function exportBackup() {
   const data = JSON.stringify({
@@ -1692,6 +1704,194 @@ function setRole(r) {
   currentRole = r;
   document.querySelectorAll('.role-tab').forEach((t,i)=>t.classList.toggle('active',i===(r==='admin'?0:1)));
 }
+
+// ══════════════════════════════════════════════════════════════
+// SISTEMA DE LICENCIAS FERNEYMOTOS — Compatible con panel ACCE PRO
+// ══════════════════════════════════════════════════════════════
+var MOTO_LIC_KEY = 'moto_lic_v1';
+var MOTO_USER_KEY = 'moto_user_v1';
+
+// Verificar código (mismo formato que ACCE PRO)
+function motoVerificarCodigo(raw) {
+  if (!raw) return { valid: false };
+  var code = raw.trim().toUpperCase();
+  var now = Date.now();
+
+  if (code.startsWith('PRO-'))   return { valid: true, type: 'pro',   daysLeft: 36500, code: code };
+  if (code.startsWith('ANUAL-')) return { valid: true, type: 'anual', daysLeft: 365,   code: code };
+  if (code.startsWith('TEST-'))  return { valid: true, type: 'test',  daysLeft: 30,    code: code };
+  if (code.startsWith('DEMO-'))  return { valid: true, type: 'demo',  daysLeft: 8,     code: code };
+  if (code.startsWith('TRIAL-')) {
+    var parts = code.split('-');
+    var dias = parseInt(parts[1]) || 15;
+    return { valid: true, type: 'trial', daysLeft: dias, code: code };
+  }
+  return { valid: false };
+}
+
+// Tabs de la pantalla de licencia
+function motoShowTab(tab) {
+  document.getElementById('lic-panel-login').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('lic-panel-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').style.background    = tab === 'login'    ? '#10E08A' : 'transparent';
+  document.getElementById('tab-login').style.color         = tab === 'login'    ? '#0D1B35' : '#7A8EAA';
+  document.getElementById('tab-register').style.background = tab === 'register' ? '#10E08A' : 'transparent';
+  document.getElementById('tab-register').style.color      = tab === 'register' ? '#0D1B35' : '#7A8EAA';
+}
+
+function motoShowError(id, msg) {
+  var el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+}
+
+// Entrar al sistema con cuenta existente
+function motoDoLogin() {
+  var user = (document.getElementById('moto-login-user').value||'').trim().toLowerCase();
+  var pass = (document.getElementById('moto-login-pass').value||'').trim();
+  if (!user || !pass) { motoShowError('moto-login-error','Completa usuario y contraseña'); return; }
+
+  // Buscar en localStorage
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(MOTO_USER_KEY + '_' + user) || 'null'); } catch(e) {}
+
+  if (!saved) { motoShowError('moto-login-error','Usuario no encontrado'); return; }
+  if (saved.password !== pass) { motoShowError('moto-login-error','Contraseña incorrecta'); return; }
+
+  // Verificar licencia
+  var lic = motoVerificarCodigo(saved.licenseCode || '');
+  if (!lic.valid) { motoShowError('moto-login-error','Licencia inválida. Contacta a GlobalAcce.'); return; }
+
+  // Guardar sesión
+  localStorage.setItem(MOTO_LIC_KEY, JSON.stringify({ user: user, licenseCode: saved.licenseCode, type: lic.type }));
+
+  // Actualizar lastSeen en Firebase
+  try {
+    var db = window.__licDB;
+    if (db) db.collection('trp_users').doc(user).set({ lastSeen: new Date().toISOString(), software: 'FerneyMotos' }, { merge: true }).catch(function(){});
+  } catch(e) {}
+
+  motoEntrarSistema(saved);
+}
+
+// Crear cuenta nueva con código de activación
+function motoDoRegister() {
+  var code = (document.getElementById('moto-reg-code').value||'').trim().toUpperCase();
+  var user = (document.getElementById('moto-reg-user').value||'').trim().toLowerCase().replace(/\s/g,'');
+  var pass = (document.getElementById('moto-reg-pass').value||'').trim();
+
+  if (!code) { motoShowError('moto-reg-error','Ingresa un código de activación'); return; }
+  if (!user) { motoShowError('moto-reg-error','Elige un nombre de usuario'); return; }
+  if (pass.length < 4) { motoShowError('moto-reg-error','La contraseña debe tener mínimo 4 caracteres'); return; }
+
+  var lic = motoVerificarCodigo(code);
+  if (!lic.valid) { motoShowError('moto-reg-error','Código inválido. Contacta a GlobalAcce.'); return; }
+
+  // Verificar en Firebase si el código ya fue usado
+  motoShowError('moto-reg-error', '');
+  var codeKey = 'code_LIC_' + code.replace(/[^A-Z0-9]/g,'_');
+  var db = window.__licDB;
+
+  var crearCuenta = function(alreadyUsedBy) {
+    if (alreadyUsedBy && alreadyUsedBy !== user) {
+      motoShowError('moto-reg-error','Este código ya fue activado por otro usuario.');
+      return;
+    }
+    // Guardar usuario localmente
+    var userData = { username: user, password: pass, licenseCode: code, licenseType: lic.type, software: 'FerneyMotos', createdAt: new Date().toISOString() };
+    localStorage.setItem(MOTO_USER_KEY + '_' + user, JSON.stringify(userData));
+    localStorage.setItem(MOTO_LIC_KEY, JSON.stringify({ user: user, licenseCode: code, type: lic.type }));
+
+    // Registrar en Firebase (misma colección que ACCE PRO)
+    if (db) {
+      // Registrar uso del código
+      db.collection('trp_users').doc(codeKey).set({
+        code: code, used: true, usedBy: user,
+        usedAt: new Date().toISOString(), codeType: lic.type, software: 'FerneyMotos'
+      }, { merge: true }).catch(function(){});
+      // Registrar cuenta
+      db.collection('trp_users').doc(user).set({
+        username: user, software: 'FerneyMotos',
+        licenseCode: code, licenseType: lic.type,
+        createdAt: new Date().toISOString(), lastSeen: new Date().toISOString()
+      }, { merge: true }).catch(function(){});
+    }
+    motoEntrarSistema(userData);
+  };
+
+  if (db) {
+    db.collection('trp_users').doc(codeKey).get().then(function(doc) {
+      crearCuenta(doc.exists && doc.data().used ? doc.data().usedBy : null);
+    }).catch(function() { crearCuenta(null); });
+  } else {
+    crearCuenta(null);
+  }
+}
+
+// Entrar al sistema después de validar
+function motoEntrarSistema(userData) {
+  document.getElementById('license-screen').style.display = 'none';
+  // Usar el sistema de login original del taller motos
+  // Inyectar credenciales si el usuario es admin o empleado
+  var u = userData.username;
+  var p = userData.password;
+  document.getElementById('login-user').value = u;
+  document.getElementById('login-pass').value = p;
+
+  // Verificar si es usuario admin original o empleado original
+  if ((u === 'ferneymotos' && p === 'ferney10') || (u === 'empleado' && p === 'emp123')) {
+    doLogin();
+    return;
+  }
+
+  // Usuario creado por el sistema de licencias → entrar como admin
+  var found = state && state.employees ? state.employees.find(function(e){ return e.usuario === u && e.password === p; }) : null;
+  if (found) {
+    doLogin();
+  } else {
+    // Nuevo usuario con licencia → entrar directamente como admin
+    currentUser = { user: u, pass: p, name: u.charAt(0).toUpperCase()+u.slice(1), role: 'admin', avatar: u.charAt(0).toUpperCase() };
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('emp-panel').style.display = 'none';
+    document.getElementById('user-avatar').textContent = currentUser.avatar;
+    document.getElementById('user-name-disp').textContent = currentUser.name;
+    document.getElementById('user-role-disp').textContent = 'Administrador';
+    goPage('dashboard');
+    loadFromFirebase();
+    if (typeof toast === 'function') toast('Bienvenido, ' + currentUser.name, 'success');
+  }
+}
+
+// Verificar sesión al cargar
+function motoCheckSession() {
+  var licScreen = document.getElementById('license-screen');
+  if (!licScreen) return;
+
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem(MOTO_LIC_KEY) || 'null'); } catch(e) {}
+
+  if (session && session.user && session.licenseCode) {
+    var lic = motoVerificarCodigo(session.licenseCode);
+    if (lic.valid) {
+      // Sesión válida → cargar usuario y entrar
+      var userData = null;
+      try { userData = JSON.parse(localStorage.getItem(MOTO_USER_KEY + '_' + session.user) || 'null'); } catch(e) {}
+      if (userData) {
+        licScreen.style.display = 'none';
+        motoEntrarSistema(userData);
+        return;
+      }
+    }
+  }
+  // Sin sesión → mostrar pantalla de licencia
+  licScreen.style.display = 'flex';
+}
+
+// Ejecutar al cargar la página
+window.addEventListener('load', function() {
+  setTimeout(motoCheckSession, 300);
+});
+
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value.trim();
@@ -1740,11 +1940,13 @@ function doLogin() {
 }
 function doLogout() {
   try { localStorage.removeItem(_SESSION_KEY||'ferneymotos_session'); } catch(e){}
+  try { localStorage.removeItem(MOTO_LIC_KEY); } catch(e){}
   if(_inactivityTimer) clearTimeout(_inactivityTimer);
   currentUser=null; state.cart=[];
   document.getElementById('app').style.display='none';
   document.getElementById('emp-panel').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('license-screen').style.display='flex';
   document.getElementById('login-user').value='';
   document.getElementById('login-pass').value='';
 }
