@@ -1567,21 +1567,33 @@ function loadState() {
 // Sincronización Firebase con protección total de datos
 function loadFromFirebase() {
   if (!window.__motoFirebaseOK || !window.__motoDB) return;
-  // Marcar timestamp actual para proteger datos locales
-  _motoLastSaveTs = Date.now();
-  // Usar onSnapshot para sync en tiempo real
+
+  // Detectar si hay datos locales reales
+  var hayDatosLocales = (state.products.length > 0 || state.transactions.length > 0 ||
+                         state.services.length > 0 || state.employees.length > 0);
+
+  // Si hay datos locales → protegerlos con timestamp actual
+  // Si NO hay datos locales (caché borrado) → permitir que Firebase cargue (ts=0)
+  _motoLastSaveTs = hayDatosLocales ? Date.now() : 0;
+
+  console.log('[MOTO] loadFromFirebase — datos locales:', hayDatosLocales, '— ts:', _motoLastSaveTs);
+
   window.__motoDB.onSnapshot(function(doc) {
-    // Ignorar nuestros propios saves (evitar eco)
     if (doc.exists && doc.data().savedBy === _motoSessionId) return;
     var fbTs = (doc.exists && doc.data().updatedAt) ? new Date(doc.data().updatedAt).getTime() : 0;
-    // Solo aplicar si Firebase es más reciente que nuestro último guardado
-    if (fbTs <= _motoLastSaveTs) {
+
+    // Si hay datos locales y Firebase no es más reciente → ignorar
+    if (hayDatosLocales && fbTs <= _motoLastSaveTs) {
       if (!doc.exists) {
-        // Firebase vacío — subir datos locales si existen
         if (state.products.length > 0 || state.transactions.length > 0) {
           saveState();
         }
       }
+      return;
+    }
+    // Si NO hay datos locales → siempre cargar de Firebase
+    if (!hayDatosLocales && !doc.exists) {
+      console.log('[MOTO] Firebase vacío y sin datos locales');
       return;
     }
     if (doc.exists && doc.data().appData) {
@@ -1605,8 +1617,14 @@ function loadFromFirebase() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
         localStorage.setItem(STORAGE_KEY + '_ts', fbTs.toString());
         _motoLastSaveTs = fbTs;
+        // Actualizar toda la UI
         if (typeof renderCurrentView === 'function') renderCurrentView();
-        console.log('[MOTO] Datos sincronizados desde otro dispositivo');
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof renderProducts === 'function') renderProducts();
+        if (typeof renderTransactions === 'function') renderTransactions();
+        console.log('[MOTO] ✅ Datos cargados desde Firebase:', 
+          state.products.length, 'productos,',
+          state.transactions.length, 'transacciones');
       } catch(e) { console.warn('Error procesando Firebase:', e); }
     }
   }, function(e) { console.warn('Error listener Firebase moto:', e); });
