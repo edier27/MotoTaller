@@ -24,14 +24,27 @@
       var __motoDB = _motoApp.firestore().collection("mototaller").doc("main");
       window.__motoDB = __motoDB;
       window.__motoFirebaseOK = true;
-      // App principal para licencias (comparte trp_users con ACCE PRO)
-      var _mainApp = firebase.apps.find(function(a){ return a.name === '[DEFAULT]' || a.name === 'default'; });
-      if (!_mainApp) _mainApp = firebase.initializeApp(_fbConfig);
-      window.__licDB = _mainApp.firestore();
     } catch(e) {
       window.__motoFirebaseOK = false;
       window.__motoDB = null;
       console.warn("Firebase mototaller no disponible:", e);
+    }
+    // Inicializar app de licencias en try-catch SEPARADO (no afecta datos del taller)
+    try {
+      var _licApp = firebase.apps.find(function(a){ return a.name === 'licapp'; });
+      if (!_licApp) _licApp = firebase.initializeApp({
+        apiKey: "AIzaSyAzOoK99y6L95sFAKZFZ0wY42Ljw2YEOM8",
+        authDomain: "globalacce-37997.firebaseapp.com",
+        projectId: "globalacce-37997",
+        storageBucket: "globalacce-37997.firebasestorage.app",
+        messagingSenderId: "779307465490",
+        appId: "1:779307465490:web:848a554272501bbaf251cb"
+      }, 'licapp');
+      window.__licDB = _licApp.firestore();
+      console.log('[MOTO] Firebase licencias OK');
+    } catch(e2) {
+      window.__licDB = null;
+      console.warn('[MOTO] Firebase licencias no disponible:', e2);
     }
   </script>
 <style>
@@ -1944,7 +1957,8 @@ function motoCheckSession() {
 
 // Ejecutar al cargar la página
 window.addEventListener('load', function() {
-  setTimeout(motoCheckSession, 300);
+  // Aumentar tiempo para que Firebase y state carguen completamente
+  setTimeout(motoCheckSession, 800);
 });
 
 
