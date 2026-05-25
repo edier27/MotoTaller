@@ -1052,6 +1052,25 @@
         <div><div class="page-title">⚙ Configuración</div><div class="page-subtitle">Gestión de empleados, accesos y datos del sistema</div></div>
       </div>
 
+      <!-- TARJETA DE LICENCIA -->
+      <div class="card" style="margin-bottom:20px;border:2px solid var(--accent)">
+        <div class="card-header">
+          <div class="card-title">🔑 Licencia del Software</div>
+          <div id="moto-lic-badge" style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(16,224,138,0.15);color:var(--accent)">Cargando...</div>
+        </div>
+        <div style="padding:16px">
+          <div id="moto-lic-info" style="margin-bottom:16px;font-size:13px;color:var(--text2)">Verificando licencia...</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:200px">
+              <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Código de activación</label>
+              <input type="text" id="moto-new-lic-code" placeholder="Ingresa nuevo código" style="width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-bottom:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase">
+            </div>
+            <button onclick="motoActivarNuevoCodigo()" style="padding:11px 20px;background:var(--accent);border:none;border-radius:10px;color:#0D1B35;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap">✅ Activar</button>
+          </div>
+          <div id="moto-lic-msg" style="margin-top:10px;font-size:13px;display:none"></div>
+        </div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
 
         <!-- Agregar / editar empleados -->
@@ -1750,11 +1769,40 @@ function motoDoLogin() {
   var pass = (document.getElementById('moto-login-pass').value||'').trim();
   if (!user || !pass) { motoShowError('moto-login-error','Completa usuario y contraseña'); return; }
 
-  // Buscar en localStorage
+  // ── Verificar usuarios originales hardcodeados ──
+  // (ferneymotos/ferney10 y empleado/emp123 siempre funcionan sin licencia)
+  var USUARIOS_ORIGINALES = [
+    { user: 'ferneymotos', pass: 'ferney10',  name: 'FerneyMotos', role: 'admin' },
+    { user: 'empleado',    pass: 'emp123',    name: 'Empleado',    role: 'employee' }
+  ];
+  var original = USUARIOS_ORIGINALES.find(function(u){ return u.user === user && u.pass === pass; });
+  if (original) {
+    // Usuario original → guardar sesión con licencia PRO permanente
+    var fakeSession = { user: user, licenseCode: 'PRO-ORIGINAL', type: 'pro' };
+    localStorage.setItem(MOTO_LIC_KEY, JSON.stringify(fakeSession));
+    var fakeUserData = { username: user, password: pass, name: original.name, role: original.role, licenseCode: 'PRO-ORIGINAL', licenseType: 'pro' };
+    localStorage.setItem(MOTO_USER_KEY + '_' + user, JSON.stringify(fakeUserData));
+    motoEntrarSistema(fakeUserData);
+    return;
+  }
+
+  // ── Verificar empleados dinámicos del state ──
+  if (typeof state !== 'undefined' && state.employees) {
+    var emp = state.employees.find(function(e){ return e.usuario === user && e.password === pass; });
+    if (emp) {
+      var empSession = { user: user, licenseCode: 'PRO-ORIGINAL', type: 'pro' };
+      localStorage.setItem(MOTO_LIC_KEY, JSON.stringify(empSession));
+      var empData = { username: user, password: pass, name: emp.nombre, role: 'employee', licenseCode: 'PRO-ORIGINAL', licenseType: 'pro' };
+      motoEntrarSistema(empData);
+      return;
+    }
+  }
+
+  // ── Verificar usuarios creados con código de licencia ──
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem(MOTO_USER_KEY + '_' + user) || 'null'); } catch(e) {}
 
-  if (!saved) { motoShowError('moto-login-error','Usuario no encontrado'); return; }
+  if (!saved) { motoShowError('moto-login-error','Usuario no encontrado. Si es nuevo, usa la pestaña "Crear Cuenta"'); return; }
   if (saved.password !== pass) { motoShowError('moto-login-error','Contraseña incorrecta'); return; }
 
   // Verificar licencia
@@ -1859,6 +1907,8 @@ function motoEntrarSistema(userData) {
     goPage('dashboard');
     loadFromFirebase();
     if (typeof toast === 'function') toast('Bienvenido, ' + currentUser.name, 'success');
+    // Verificar expiración al entrar
+    setTimeout(motoCheckExpiry, 2000);
   }
 }
 
@@ -1872,10 +1922,15 @@ function motoCheckSession() {
 
   if (session && session.user && session.licenseCode) {
     var lic = motoVerificarCodigo(session.licenseCode);
-    if (lic.valid) {
-      // Sesión válida → cargar usuario y entrar
+    // PRO-ORIGINAL siempre es válido (usuarios originales del sistema)
+    var esOriginal = session.licenseCode === 'PRO-ORIGINAL';
+    if (lic.valid || esOriginal) {
       var userData = null;
       try { userData = JSON.parse(localStorage.getItem(MOTO_USER_KEY + '_' + session.user) || 'null'); } catch(e) {}
+      if (!userData && esOriginal) {
+        // Usuario original sin datos guardados → crear datos mínimos
+        userData = { username: session.user, password: session.user === 'ferneymotos' ? 'ferney10' : 'emp123', name: session.user, role: session.user === 'ferneymotos' ? 'admin' : 'employee', licenseCode: 'PRO-ORIGINAL', licenseType: 'pro' };
+      }
       if (userData) {
         licScreen.style.display = 'none';
         motoEntrarSistema(userData);
@@ -1891,6 +1946,164 @@ function motoCheckSession() {
 window.addEventListener('load', function() {
   setTimeout(motoCheckSession, 300);
 });
+
+
+// ── LICENCIA: Verificar expiración y mostrar info en configuración ──────────
+function motoGetLicInfo() {
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem(MOTO_LIC_KEY) || 'null'); } catch(e) {}
+  if (!session || !session.licenseCode) return null;
+  return motoVerificarCodigo(session.licenseCode);
+}
+
+function motoRenderLicInfo() {
+  var lic = motoGetLicInfo();
+  var badge = document.getElementById('moto-lic-badge');
+  var info  = document.getElementById('moto-lic-info');
+  if (!badge || !info) return;
+
+  if (!lic || !lic.valid) {
+    badge.textContent = '❌ Sin licencia';
+    badge.style.background = 'rgba(239,68,68,0.15)';
+    badge.style.color = '#EF4444';
+    info.textContent = 'No hay licencia activa. Ingresa un código para activar el software.';
+    return;
+  }
+
+  var session = JSON.parse(localStorage.getItem(MOTO_LIC_KEY)||'{}');
+  var code = session.licenseCode || '';
+
+  if (lic.type === 'pro') {
+    badge.textContent = '✅ Licencia PRO';
+    badge.style.background = 'rgba(16,224,138,0.15)';
+    badge.style.color = 'var(--accent)';
+    info.innerHTML = '<strong>Código:</strong> ' + code + '<br><strong>Tipo:</strong> PRO — Sin vencimiento ♾️';
+  } else {
+    var activatedAt = null;
+    try {
+      var userData = JSON.parse(localStorage.getItem(MOTO_USER_KEY + '_' + session.user) || '{}');
+      activatedAt = userData.activatedAt ? new Date(userData.activatedAt) : null;
+    } catch(e) {}
+    if (!activatedAt) activatedAt = new Date();
+    var expDate = new Date(activatedAt.getTime() + (lic.daysLeft * 24*60*60*1000));
+    var daysLeft = Math.max(0, Math.ceil((expDate - Date.now()) / (24*60*60*1000)));
+
+    if (daysLeft <= 0) {
+      badge.textContent = '❌ Licencia vencida';
+      badge.style.background = 'rgba(239,68,68,0.15)';
+      badge.style.color = '#EF4444';
+      info.innerHTML = '<strong>Código:</strong> ' + code + '<br><strong style="color:#EF4444">⚠ Licencia vencida — Activa un código nuevo</strong>';
+    } else if (daysLeft <= 3) {
+      badge.textContent = '⚠ ' + daysLeft + ' días';
+      badge.style.background = 'rgba(245,158,11,0.15)';
+      badge.style.color = '#F59E0B';
+      info.innerHTML = '<strong>Código:</strong> ' + code + '<br><strong style="color:#F59E0B">⚠ Vence en ' + daysLeft + ' día(s) — renueva pronto</strong>';
+    } else {
+      badge.textContent = '✅ ' + lic.type.toUpperCase() + ' — ' + daysLeft + ' días';
+      badge.style.background = 'rgba(16,224,138,0.15)';
+      badge.style.color = 'var(--accent)';
+      info.innerHTML = '<strong>Código:</strong> ' + code + '<br><strong>Tipo:</strong> ' + lic.type.toUpperCase() + ' · <strong>Días restantes:</strong> ' + daysLeft;
+    }
+  }
+}
+
+// Activar nuevo código desde configuración
+function motoActivarNuevoCodigo() {
+  var code = (document.getElementById('moto-new-lic-code').value||'').trim().toUpperCase();
+  var msg = document.getElementById('moto-lic-msg');
+
+  if (!code) {
+    msg.textContent = '⚠ Ingresa un código de activación.';
+    msg.style.color = '#F59E0B'; msg.style.display = 'block'; return;
+  }
+
+  var lic = motoVerificarCodigo(code);
+  if (!lic.valid) {
+    msg.textContent = '❌ Código inválido. Contacta a GlobalAcce.';
+    msg.style.color = '#EF4444'; msg.style.display = 'block'; return;
+  }
+
+  var codeKey = 'code_LIC_' + code.replace(/[^A-Z0-9]/g,'_');
+  var db = window.__licDB;
+
+  var activar = function(alreadyUsedBy) {
+    var session = null;
+    try { session = JSON.parse(localStorage.getItem(MOTO_LIC_KEY)||'null'); } catch(e) {}
+    var currentUser2 = session ? session.user : 'unknown';
+
+    if (alreadyUsedBy && alreadyUsedBy !== currentUser2) {
+      msg.textContent = '❌ Este código ya fue activado por otro usuario.';
+      msg.style.color = '#EF4444'; msg.style.display = 'block'; return;
+    }
+
+    // Actualizar sesión con nuevo código
+    var newSession = { user: currentUser2, licenseCode: code, type: lic.type, activatedAt: new Date().toISOString() };
+    localStorage.setItem(MOTO_LIC_KEY, JSON.stringify(newSession));
+
+    // Actualizar userData
+    try {
+      var ud = JSON.parse(localStorage.getItem(MOTO_USER_KEY + '_' + currentUser2)||'{}');
+      ud.licenseCode = code; ud.licenseType = lic.type; ud.activatedAt = new Date().toISOString();
+      localStorage.setItem(MOTO_USER_KEY + '_' + currentUser2, JSON.stringify(ud));
+    } catch(e) {}
+
+    // Registrar en Firebase
+    if (db) {
+      db.collection('trp_users').doc(codeKey).set({
+        code: code, used: true, usedBy: currentUser2,
+        usedAt: new Date().toISOString(), codeType: lic.type, software: 'FerneyMotos'
+      }, { merge: true }).catch(function(){});
+    }
+
+    msg.textContent = '✅ Licencia activada correctamente — ' + (lic.type === 'pro' ? 'PRO sin vencimiento ♾️' : lic.daysLeft + ' días');
+    msg.style.color = '#10E08A'; msg.style.display = 'block';
+    document.getElementById('moto-new-lic-code').value = '';
+    motoRenderLicInfo();
+  };
+
+  if (db) {
+    db.collection('trp_users').doc(codeKey).get()
+      .then(function(doc) { activar(doc.exists && doc.data().used ? doc.data().usedBy : null); })
+      .catch(function() { activar(null); });
+  } else { activar(null); }
+}
+
+// Verificar expiración periódicamente (cada 1 hora)
+function motoCheckExpiry() {
+  var lic = motoGetLicInfo();
+  if (!lic || !lic.valid) { motoForzarSalida('Sin licencia activa'); return; }
+  if (lic.type === 'pro') return; // PRO nunca vence
+
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem(MOTO_LIC_KEY)||'null'); } catch(e) {}
+  var activatedAt = (session && session.activatedAt) ? new Date(session.activatedAt) : new Date();
+  var expDate = new Date(activatedAt.getTime() + (lic.daysLeft * 24*60*60*1000));
+  var msLeft = expDate - Date.now();
+
+  if (msLeft <= 0) {
+    motoForzarSalida('Licencia vencida');
+  } else if (msLeft < 3*24*60*60*1000) {
+    var daysLeft = Math.ceil(msLeft / (24*60*60*1000));
+    if (typeof toast === 'function') toast('⚠ Tu licencia vence en ' + daysLeft + ' día(s). Renueva pronto.', 'warning');
+  }
+}
+
+function motoForzarSalida(motivo) {
+  // Mostrar pantalla de licencia vencida
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('emp-panel').style.display = 'none';
+  var ls = document.getElementById('license-screen');
+  if (ls) {
+    ls.style.display = 'flex';
+    // Mostrar mensaje de vencimiento
+    var errDiv = document.getElementById('moto-login-error');
+    if (errDiv) { errDiv.textContent = '⚠ ' + motivo + '. Activa un nuevo código.'; errDiv.style.display = 'block'; }
+  }
+  try { localStorage.removeItem(MOTO_LIC_KEY); } catch(e) {}
+}
+
+// Iniciar verificación periódica cada hora
+setInterval(motoCheckExpiry, 60 * 60 * 1000);
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -1967,7 +2180,7 @@ function goPage(p) {
   if(p==='ventas') renderSaleProducts();
   if(p==='reportes') renderReports();
   if(p==='empleados') { showEmpMain(); }
-  if(p==='configuracion') { renderCfgPage(); }
+  if(p==='configuracion') { renderCfgPage(); motoRenderLicInfo(); }
   if(p==='importar') { renderReceivingHistory(); setTimeout(()=>{ const el=document.getElementById('recv-barcode'); if(el) el.focus(); },80); }
 }
 
