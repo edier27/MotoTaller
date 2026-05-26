@@ -2189,6 +2189,10 @@ let barcodeTarget = null;
 let editProductId = null;
 
 // ─── PERSISTENCIA localStorage ────────────────────
+// ── Fecha Colombia (UTC-5) ─────────────────────────────────────────────────
+var colombiaDateMoto = function() { var n=new Date(); return new Date(n.getTime()-(5*60*60*1000)); };
+var getMesColombia   = function() { return colombiaDateMoto().toISOString().slice(0,7); };
+
 const STORAGE_KEY = 'mototaller_v1';
 
 // ─── PROTECCIÓN DE DATOS ─────────────────────────────────
@@ -2382,7 +2386,7 @@ function exportBackup() {
   }, null, 2);
   const a = document.createElement('a');
   a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
-  a.download = 'mototaller_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.download = 'mototaller_backup_' + today() + '.json';
   a.click();
   toast('Respaldo exportado correctamente','success');
 }
@@ -4036,7 +4040,7 @@ function exportCSV() {
   state.transactions.forEach(t=>rows.push([t.fecha,t.tipo,t.cliente,t.moto,t.detalle,t.empleado,t.total]));
   const csv=rows.map(r=>r.join(',')).join('\n');
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='transacciones_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  a.download='transacciones_'+today()+'.csv'; a.click();
   toast('CSV exportado correctamente','success');
 }
 function printReceipt(id) {
@@ -4528,7 +4532,7 @@ function renderCfgEmpList() {
   });
 }
 
-function saveEmployee() { cfgSaveEmployee(); } // alias para modal viejo
+// saveEmployee alias removed
 function deleteEmployee(id) {
   if(!confirm('Eliminar empleado? Esta accion no se puede deshacer.')) return;
   var antes = state.employees.length;
@@ -4572,7 +4576,7 @@ function openRegisterActivity(nombre) { selectEmpForActivity(nombre); }
 
 function saveActivity() { /* reemplazada al final del script */ }
 
-function renderActivitiesAdmin() { /* reemplazada al final del script */ }
+// renderActivitiesAdmin stub removed
 
 function deleteActivity(id) {
   state.activities = state.activities.filter(a=>a.id!==id);
@@ -4910,7 +4914,7 @@ function renderEmpServsHoy() {
 function renderEmpResumen() {
   const name  = currentUser ? currentUser.name : '';
   const fEl   = document.getElementById('res-fecha-filtro');
-  const fecha = fEl && fEl.value ? fEl.value : new Date().toISOString().slice(0,10);
+  const fecha = fEl && fEl.value ? fEl.value : today();
 
   // Recopilar ventas del empleado para ese día
   const ventas = state.transactions.filter(t => t.empleado===name && t.fecha.startsWith(fecha));
@@ -5117,7 +5121,7 @@ window.saveActivity = function() {
   if(!desc){ toast('La descripción es requerida','error'); return; }
   const tipo  = document.getElementById('act-tipo').value;
   const hora  = document.getElementById('act-hora').value || new Date().toTimeString().slice(0,5);
-  const today = new Date().toISOString().slice(0,10);
+  const today = today();
   const manoObra = parseInt(document.getElementById('act-valor').value) || 0;
   const repTotal = actRepuestos.reduce((s,r) => s + r.prod.venta * r.qty, 0);
   const valorTotal = manoObra + repTotal;
@@ -5179,7 +5183,7 @@ window.saveActivity = function() {
 // ═══════════════════════════════════════════════════════
 function renderActivitiesAdmin() {
   const filterFecha = document.getElementById('act-filter-fecha');
-  const fecha = filterFecha && filterFecha.value ? filterFecha.value : new Date().toISOString().slice(0,10);
+  const fecha = filterFecha && filterFecha.value ? filterFecha.value : today();
   const emp   = selectedEmpForActivity;
   if(!emp) return;
 
@@ -6293,7 +6297,7 @@ function renderEmpStats() {
         ? d.count + ' trabajo(s) registrado(s) hoy'
         : 'Sin registros aún — el admin registrará tus trabajos');
   set('emp-fecha-display',
-      new Date().toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}));
+      colombiaDateMoto().toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}));
 }
 
 function empTab(tab) { renderEmpStats(); }
@@ -6458,7 +6462,7 @@ function empTab(tab) {
 function renderEmpDia() {
   const name = currentUser ? currentUser.name : '';
   const fEl  = document.getElementById('emp-dia-filtro');
-  const fecha = fEl && fEl.value ? fEl.value : new Date().toISOString().slice(0,10);
+  const fecha = fEl && fEl.value ? fEl.value : today();
 
   const servs = state.services.filter(s=>s.empleado===name && s.fecha.startsWith(fecha));
   const acts  = (state.activities||[]).filter(a=>a.empleado===name && a.fecha.startsWith(fecha));
@@ -6541,7 +6545,7 @@ function renderEmpDia() {
 function abrirModalPagar() {
   const name  = currentUser ? currentUser.name : '';
   const fEl   = document.getElementById('emp-dia-filtro');
-  const fecha = fEl && fEl.value ? fEl.value : new Date().toISOString().slice(0,10);
+  const fecha = fEl && fEl.value ? fEl.value : today();
   const servs = state.services.filter(s=>s.empleado===name && s.fecha.startsWith(fecha));
   const acts  = (state.activities||[]).filter(a=>a.empleado===name && a.fecha.startsWith(fecha));
   const total = servs.reduce((s,sv)=>s+(parseInt(sv.valor)||0),0)
@@ -7069,7 +7073,7 @@ function rgtRenderBotones() {
   if(!acts.length)      acts      = state.activities||[];
   if(!txs.length)       txs       = state.transactions||[];
 
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = today();
 
   if(!employees.length){
     grid.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px">Sin empleados. Ve a Configuración para agregar.</div>';
@@ -7154,7 +7158,7 @@ function rgtFiltrarEmp(nombre) {
 
 function abrirModalEmpleado(nombre) { abrirModalPagarEmp(nombre); }
 function _abrirModalEmpleadoDetalle(nombre) {
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = today();
   const acts = (state.activities||[]).filter(a => {
     const f = String(a.fecha||'');
     const mismaFecha = f.startsWith(hoy);
@@ -7235,7 +7239,7 @@ function meempRegistrarPago() {
     empUsuario: empObj ? empObj.usuario : '',
     cliente:    nombre,
     moto:       '—',
-    detalle:    'Pago de ganancia — '+new Date().toLocaleDateString('es-CO'),
+    detalle:    'Pago de ganancia — '+colombiaDateMoto().toLocaleDateString('es-CO'),
     total:      val,
     esPago:     true
   });
@@ -7394,7 +7398,7 @@ function rgtGuardar() {
 function rgtRenderLista() {
   const ff  = document.getElementById('rgt-fecha-filtro');
   const ef  = document.getElementById('rgt-emp-filtro');
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = today();
   if(ff && !ff.value) ff.value = hoy;
   const fecha  = ff ? ff.value : hoy;
   const empFil = ef ? ef.value : '';
@@ -7436,7 +7440,7 @@ function rgtRenderLista() {
 function rgtRenderResumen() {
   const el  = document.getElementById('rgt-resumen-ganancias');
   if(!el) return;
-  const hoy = new Date().toISOString().slice(0,10);
+  const hoy = today();
   const acts= (state.activities||[]).filter(a=>String(a.fecha||'').startsWith(hoy)&&(a.esManoObra||a.tipo==='servicio'));
   if(!acts.length){ el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:16px">Sin registros hoy</div>'; return; }
 
@@ -7553,7 +7557,7 @@ function switchEmpTab(){}
 function guardarManoObra(){ rgtGuardar(); }
 function renderManoObra(){ rgtRenderLista(); rgtRenderResumen(); }
 function poblarSelectEmpleados(){ rgtPoblarEmpleados(); }
-function renderEmpButtons(){ rgtRenderBotones(); }
+// renderEmpButtons alias removed - using main function
 
 // ── PAGO AL EMPLEADO (desde tarjeta) ──
 
@@ -7564,10 +7568,10 @@ function renderEmpButtons(){ rgtRenderBotones(); }
 function renderEmployees() {
   // Inicializar fecha
   const fechaEl = document.getElementById('emp-fecha-hoy');
-  if(fechaEl) fechaEl.textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if(fechaEl) fechaEl.textContent = colombiaDateMoto().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   // Inicializar fecha filtro con hoy
   const ff = document.getElementById('rgt-fecha-filtro');
-  if(ff && !ff.value) ff.value = new Date().toISOString().slice(0,10);
+  if(ff && !ff.value) ff.value = today();
   // Poblar selects y renderizar
   rgtPoblarEmpleados();
   rgtRenderLista();
@@ -7593,7 +7597,7 @@ function abrirModalPagarEmp(nombre) {
 
   var empObj = emps.find(function(e){ return e.nombre === nombre; });
   var empUser = empObj ? String(empObj.usuario||'').toLowerCase() : '';
-  var hoy = new Date().toISOString().slice(0,10);
+  var hoy = today();
 
   var misActs = acts.filter(function(a) {
     if (!String(a.fecha||'').startsWith(hoy)) return false;
