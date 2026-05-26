@@ -1633,7 +1633,71 @@ body.light-mode .mobile-nav-item.active {
     <!-- CONFIGURACIÓN -->
     <div class="page" id="page-configuracion">
       <div class="page-header">
-        <div><div class="page-title">⚙ Configuración</div><div class="page-subtitle">Gestión de empleados, accesos y datos del sistema</div></div>
+        <div><div class="page-title">⚙ Configuración</div><div class="page-subtitle">Personaliza tu taller, empleados y apariencia</div></div>
+      </div>
+
+      <!-- ══ TARJETA PERFIL DEL NEGOCIO ══ -->
+      <div class="card" style="margin-bottom:20px;border:1px solid rgba(255,107,26,0.2)">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🏪 Perfil de Mi Taller</div>
+            <div class="card-subtitle">Nombre, logo y datos de contacto</div>
+          </div>
+          <button onclick="motoGuardarPerfil()" class="btn btn-primary btn-sm">💾 Guardar</button>
+        </div>
+
+        <!-- Logo + Nombre lado a lado -->
+        <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+          <!-- Logo -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;min-width:120px">
+            <div id="moto-logo-preview" onclick="document.getElementById('moto-logo-input').click()"
+              style="width:100px;height:100px;border-radius:18px;border:2px dashed var(--border2);
+                     display:flex;align-items:center;justify-content:center;cursor:pointer;
+                     background:var(--bg3);overflow:hidden;transition:all .2s;position:relative">
+              <div id="moto-logo-placeholder" style="text-align:center;color:var(--text2)">
+                <div style="font-size:32px">🏍</div>
+                <div style="font-size:11px;margin-top:4px">Subir logo</div>
+              </div>
+              <img id="moto-logo-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;border-radius:16px">
+            </div>
+            <input type="file" id="moto-logo-input" accept="image/*" style="display:none" onchange="motoCargarLogo(this)">
+            <button onclick="motoQuitarLogo()" id="moto-btn-quitar-logo"
+              style="display:none;background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;font-family:inherit">
+              ✕ Quitar logo
+            </button>
+          </div>
+
+          <!-- Datos del negocio -->
+          <div style="flex:1;min-width:240px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="grid-column:1/-1">
+              <label>Nombre del Taller</label>
+              <input type="text" id="moto-biz-nombre" placeholder="Ej: FerneyMotos Taller" maxlength="50">
+            </div>
+            <div>
+              <label>Propietario</label>
+              <input type="text" id="moto-biz-propietario" placeholder="Ej: Ferney García">
+            </div>
+            <div>
+              <label>Teléfono / WhatsApp</label>
+              <input type="tel" id="moto-biz-telefono" placeholder="Ej: 3001234567">
+            </div>
+            <div>
+              <label>Ciudad</label>
+              <input type="text" id="moto-biz-ciudad" placeholder="Ej: Bogotá">
+            </div>
+            <div>
+              <label>Dirección</label>
+              <input type="text" id="moto-biz-direccion" placeholder="Ej: Calle 10 # 5-20">
+            </div>
+            <div style="grid-column:1/-1">
+              <label>Eslogan (opcional)</label>
+              <input type="text" id="moto-biz-eslogan" placeholder="Ej: Especialistas en motos de toda marca" maxlength="80">
+            </div>
+          </div>
+        </div>
+
+        <div id="moto-perfil-msg" style="margin-top:14px;font-size:13px;font-weight:700;display:none;padding:10px 14px;border-radius:10px"></div>
       </div>
 
       <!-- TARJETA APARIENCIA -->
@@ -2591,6 +2655,8 @@ function motoEntrarSistema(userData) {
     document.getElementById('user-role-disp').textContent = 'Administrador';
     goPage('dashboard');
     loadFromFirebase();
+    // Cargar perfil del negocio al entrar
+    setTimeout(motoCargarPerfil, 1500);
     if (typeof toast === 'function') toast('Bienvenido, ' + currentUser.name, 'success');
     // Verificar expiración al entrar
     setTimeout(motoCheckExpiry, 2000);
@@ -2954,6 +3020,171 @@ document.addEventListener('DOMContentLoaded', function(){
   motoApplyTheme(_motoTheme, _motoAccent, _motoAccent2);
 });
 
+
+// ══ PERFIL DEL NEGOCIO ═══════════════════════════════════════════════════════
+var MOTO_PROFILE_KEY = 'moto_biz_profile';
+
+function motoCargarLogo(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  if (file.size > 2 * 1024 * 1024) {
+    alert('El logo no debe superar 2MB');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('moto-logo-img');
+    var placeholder = document.getElementById('moto-logo-placeholder');
+    var btnQuitar = document.getElementById('moto-btn-quitar-logo');
+    if (img) { img.src = e.target.result; img.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+    if (btnQuitar) btnQuitar.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function motoQuitarLogo() {
+  var img = document.getElementById('moto-logo-img');
+  var placeholder = document.getElementById('moto-logo-placeholder');
+  var btnQuitar = document.getElementById('moto-btn-quitar-logo');
+  var input = document.getElementById('moto-logo-input');
+  if (img) { img.src = ''; img.style.display = 'none'; }
+  if (placeholder) placeholder.style.display = 'block';
+  if (btnQuitar) btnQuitar.style.display = 'none';
+  if (input) input.value = '';
+}
+
+function motoGuardarPerfil() {
+  var nombre     = (document.getElementById('moto-biz-nombre')?.value || '').trim();
+  var propietario= (document.getElementById('moto-biz-propietario')?.value || '').trim();
+  var telefono   = (document.getElementById('moto-biz-telefono')?.value || '').trim();
+  var ciudad     = (document.getElementById('moto-biz-ciudad')?.value || '').trim();
+  var direccion  = (document.getElementById('moto-biz-direccion')?.value || '').trim();
+  var eslogan    = (document.getElementById('moto-biz-eslogan')?.value || '').trim();
+  var logoImg    = document.getElementById('moto-logo-img');
+  var logo       = (logoImg && logoImg.style.display !== 'none') ? logoImg.src : '';
+
+  if (!nombre) {
+    motoMostrarPerfilMsg('⚠️ El nombre del taller es obligatorio', 'warning');
+    return;
+  }
+
+  var profile = { nombre, propietario, telefono, ciudad, direccion, eslogan, logo, updatedAt: new Date().toISOString() };
+
+  // Guardar en localStorage
+  try { localStorage.setItem(MOTO_PROFILE_KEY, JSON.stringify(profile)); } catch(e) {}
+
+  // Guardar en Firebase — independiente por usuario
+  try {
+    var session = JSON.parse(localStorage.getItem(MOTO_LIC_KEY) || '{}');
+    var username = session.user || 'default';
+    // Guardar en colección mototaller con doc por usuario
+    var _mApp = firebase.apps.find(function(a){ return a.name === 'motoapp'; });
+    if (_mApp) {
+      _mApp.firestore().collection('mototaller').doc('profile_' + username)
+        .set(profile, { merge: true })
+        .then(function(){ console.log('[MOTO] ✅ Perfil guardado en Firebase para:', username); })
+        .catch(function(e){ console.warn('[MOTO] Error guardando perfil:', e); });
+    }
+  } catch(e) { console.warn('[MOTO] Error guardando perfil:', e); }
+
+  // Aplicar el nombre al sidebar inmediatamente
+  motoAplicarPerfil(profile);
+  motoMostrarPerfilMsg('✅ Perfil guardado correctamente', 'success');
+}
+
+function motoMostrarPerfilMsg(msg, tipo) {
+  var el = document.getElementById('moto-perfil-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = tipo === 'success' ? 'rgba(13,201,122,0.12)' : 'rgba(232,150,10,0.12)';
+  el.style.color = tipo === 'success' ? 'var(--green)' : 'var(--yellow)';
+  setTimeout(function(){ el.style.display = 'none'; }, 3000);
+}
+
+function motoAplicarPerfil(profile) {
+  if (!profile) return;
+
+  // Actualizar nombre en sidebar logo
+  var logoText = document.querySelector('.logo-text h1');
+  if (logoText && profile.nombre) {
+    logoText.textContent = profile.nombre.toUpperCase().slice(0, 12);
+  }
+
+  // Actualizar logo en sidebar orb
+  var orb = document.querySelector('.logo-orb');
+  if (orb && profile.logo) {
+    orb.innerHTML = '<img src="'+profile.logo+'" style="width:100%;height:100%;object-fit:cover;border-radius:13px">';
+  } else if (orb) {
+    orb.textContent = '⚙';
+  }
+
+  // Actualizar subtítulo
+  var logoSub = document.querySelector('.logo-text span');
+  if (logoSub && profile.ciudad) {
+    logoSub.textContent = profile.ciudad.toUpperCase();
+  }
+
+  // Actualizar título de la pestaña del navegador
+  if (profile.nombre) document.title = profile.nombre + ' — Sistema de Gestión';
+}
+
+function motoCargarPerfil() {
+  var profile = null;
+  try { profile = JSON.parse(localStorage.getItem(MOTO_PROFILE_KEY) || 'null'); } catch(e) {}
+
+  // Si no hay en localStorage, cargar de Firebase (por usuario)
+  if (!profile) {
+    try {
+      var session2 = JSON.parse(localStorage.getItem(MOTO_LIC_KEY) || '{}');
+      var username2 = session2.user || 'default';
+      var _mApp2 = firebase.apps.find(function(a){ return a.name === 'motoapp'; });
+      if (_mApp2) {
+        _mApp2.firestore().collection('mototaller').doc('profile_' + username2).get()
+          .then(function(doc){
+            if (doc.exists) {
+              var fbProfile = doc.data();
+              try { localStorage.setItem(MOTO_PROFILE_KEY, JSON.stringify(fbProfile)); } catch(e) {}
+              motoAplicarPerfil(fbProfile);
+              motoRellenarFormPerfil(fbProfile);
+            }
+          }).catch(function(){});
+      }
+    } catch(e) {}
+    return;
+  }
+
+  motoAplicarPerfil(profile);
+  motoRellenarFormPerfil(profile);
+}
+
+function motoRellenarFormPerfil(profile) {
+  if (!profile) return;
+  var fields = {
+    'moto-biz-nombre':      profile.nombre || '',
+    'moto-biz-propietario': profile.propietario || '',
+    'moto-biz-telefono':    profile.telefono || '',
+    'moto-biz-ciudad':      profile.ciudad || '',
+    'moto-biz-direccion':   profile.direccion || '',
+    'moto-biz-eslogan':     profile.eslogan || ''
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = fields[id];
+  });
+
+  // Mostrar logo si existe
+  if (profile.logo) {
+    var img = document.getElementById('moto-logo-img');
+    var placeholder = document.getElementById('moto-logo-placeholder');
+    var btnQuitar = document.getElementById('moto-btn-quitar-logo');
+    if (img) { img.src = profile.logo; img.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+    if (btnQuitar) btnQuitar.style.display = 'block';
+  }
+}
+
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value.trim();
@@ -3122,7 +3353,7 @@ function goPage(p) {
   if(p==='ventas') renderSaleProducts();
   if(p==='reportes') renderReports();
   if(p==='empleados') { showEmpMain(); }
-  if(p==='configuracion') { renderCfgPage(); motoRenderLicInfo(); }
+  if(p==='configuracion') { renderCfgPage(); motoRenderLicInfo(); motoRellenarFormPerfil(JSON.parse(localStorage.getItem(MOTO_PROFILE_KEY)||'null')); }
   if(p==='importar') { renderReceivingHistory(); setTimeout(()=>{ const el=document.getElementById('recv-barcode'); if(el) el.focus(); },80); }
   // Actualizar barra inferior móvil
   document.querySelectorAll('.mobile-nav-item').forEach(function(btn){ btn.classList.remove('active'); });
