@@ -563,6 +563,141 @@ tr:last-child td { border-bottom:none; }
 .color-swatch.active { border-color:#fff !important; box-shadow:0 0 12px rgba(255,255,255,0.3); }
 
 /* ── MOBILE ── */
+/* ══ MODO CLARO — overrides específicos ══════════════════════════════════════ */
+body.light-mode {
+  background:#F0F4FA;
+}
+body.light-mode .sidebar,
+body.light-mode #sidebar-admin {
+  background:rgba(255,255,255,0.95);
+  border-right:1px solid rgba(0,0,0,0.08);
+}
+body.light-mode .sidebar::after,
+body.light-mode #sidebar-admin::after {
+  background:linear-gradient(180deg,transparent,rgba(255,107,26,0.2) 30%,rgba(255,107,26,0.2) 70%,transparent);
+}
+body.light-mode .topbar {
+  background:rgba(240,244,250,0.85);
+  border-bottom:1px solid rgba(0,0,0,0.08);
+}
+body.light-mode .nav-item {
+  color:#4B5563;
+}
+body.light-mode .nav-item:hover {
+  background:rgba(0,0,0,0.05);
+  color:#111827;
+}
+body.light-mode .nav-item.active {
+  background:linear-gradient(90deg,rgba(255,107,26,0.12),rgba(255,107,26,0.03));
+  color:var(--accent);
+}
+body.light-mode .nav-group-label {
+  color:#9CA3AF;
+}
+body.light-mode .card {
+  background:rgba(255,255,255,0.95);
+  border:1px solid rgba(0,0,0,0.07);
+  box-shadow:0 2px 16px rgba(0,0,0,0.06);
+}
+body.light-mode .card:hover {
+  box-shadow:0 8px 32px rgba(0,0,0,0.1);
+}
+body.light-mode .stat-card {
+  background:#FFFFFF;
+  border:1px solid rgba(0,0,0,0.07);
+  box-shadow:0 2px 12px rgba(0,0,0,0.05);
+}
+body.light-mode .stat-card:hover {
+  box-shadow:0 12px 32px rgba(0,0,0,0.12);
+}
+body.light-mode .page-title {
+  background:linear-gradient(135deg,#111827 0%,#374151 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+body.light-mode .user-pill {
+  background:rgba(0,0,0,0.04);
+  border:1px solid rgba(0,0,0,0.08);
+}
+body.light-mode input:not([type=color]):not([type=range]),
+body.light-mode select, body.light-mode textarea {
+  background:#F9FAFB;
+  border:1px solid rgba(0,0,0,0.12);
+  color:#111827;
+}
+body.light-mode input:not([type=color]):focus,
+body.light-mode select:focus {
+  background:#fff;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(255,107,26,0.1);
+}
+body.light-mode th {
+  background:#F5F7FC;
+  color:#6B7280;
+}
+body.light-mode td {
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+body.light-mode tr:hover td {
+  background:rgba(0,0,0,0.02);
+}
+body.light-mode .modal {
+  background:rgba(255,255,255,0.97);
+  border:1px solid rgba(0,0,0,0.1);
+  box-shadow:0 32px 80px rgba(0,0,0,0.15);
+}
+body.light-mode .modal::before {
+  background:linear-gradient(90deg,transparent,rgba(255,107,26,0.3),transparent);
+}
+body.light-mode .btn-secondary {
+  background:#F3F4F6;
+  color:#374151;
+  border:1px solid rgba(0,0,0,0.1);
+}
+body.light-mode .btn-secondary:hover {
+  background:#E5E7EB;
+}
+body.light-mode .toast {
+  background:rgba(255,255,255,0.97);
+  border:1px solid rgba(0,0,0,0.1);
+  box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  color:#111827;
+}
+body.light-mode .status-chip {
+  background:rgba(0,0,0,0.05);
+  border:1px solid rgba(0,0,0,0.08);
+  color:#4B5563;
+}
+body.light-mode .toggle-btn {
+  background:#F3F4F6;
+  border:1px solid rgba(0,0,0,0.1);
+  color:#4B5563;
+}
+body.light-mode .page-current {
+  color:#111827;
+}
+body.light-mode select option {
+  background:#FFFFFF;
+  color:#111827;
+}
+body.light-mode .logo-text h1 {
+  background:linear-gradient(135deg,#111827,var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+body.light-mode .sidebar-footer,
+body.light-mode #sidebar-admin .sidebar-footer {
+  border-top:1px solid rgba(0,0,0,0.08);
+}
+body.light-mode .mobile-bottom-nav {
+  background:rgba(255,255,255,0.95);
+  border-top:1px solid rgba(0,0,0,0.08);
+}
+body.light-mode .mobile-nav-item {
+  color:#6B7280;
+}
+body.light-mode .mobile-nav-item.active {
+  color:var(--accent);
+}
+
 /* ══ RESPONSIVE COMPLETO ═══════════════════════════════════════════════════ */
 
 /* ── Pantalla grande (1400px+) ── */
@@ -2677,17 +2812,17 @@ var _motoAccent = localStorage.getItem('moto_accent') || '#F97316';
 var _motoAccent2 = localStorage.getItem('moto_accent2') || '#EA6C00';
 
 var LIGHT_VARS = {
-  '--bg':        '#F1F5F9',
+  '--bg':        '#F0F4FA',
   '--bg2':       '#FFFFFF',
-  '--bg3':       '#F8FAFC',
-  '--bg4':       '#E2E8F0',
+  '--bg3':       '#F5F7FC',
+  '--bg4':       '#E8EDF6',
   '--surface':   '#FFFFFF',
-  '--card':      '#FFFFFF',
-  '--border':    'rgba(0,0,0,0.08)',
-  '--border2':   'rgba(0,0,0,0.13)',
-  '--text':      '#0F172A',
-  '--text2':     '#475569',
-  '--text3':     '#94A3B8',
+  '--card':      'rgba(255,255,255,0.9)',
+  '--border':    'rgba(0,0,0,0.07)',
+  '--border2':   'rgba(0,0,0,0.12)',
+  '--text':      '#111827',
+  '--text2':     '#4B5563',
+  '--text3':     '#9CA3AF',
 };
 var DARK_VARS = {
   '--bg':        '#07090F',
@@ -2716,19 +2851,62 @@ function motoApplyTheme(theme, accent, accent2) {
   root.style.setProperty('--accent-dim', hexToRgba(a, 0.12));
   root.style.setProperty('--accent-glow', '0 0 24px ' + hexToRgba(a, 0.35));
 
+  // Variables extra para modo claro que necesitan valores distintos
+  if (theme === 'light') {
+    root.style.setProperty('--glass',  'rgba(0,0,0,0.03)');
+    root.style.setProperty('--glass2', 'rgba(0,0,0,0.06)');
+    root.style.setProperty('--card',   'rgba(255,255,255,0.9)');
+    root.style.setProperty('--neon-green',  '#00C060');
+    root.style.setProperty('--neon-blue',   '#0099CC');
+    root.style.setProperty('--green', '#00A050');
+    root.style.setProperty('--red',   '#D63031');
+    root.style.setProperty('--yellow','#E67E00');
+    root.style.setProperty('--blue',  '#0066CC');
+    // Fondo del body en modo claro
+    document.body.style.backgroundImage =
+      'radial-gradient(ellipse 1200px 800px at 80% -10%, rgba(255,107,26,0.04) 0%, transparent 60%),' +
+      'radial-gradient(ellipse 800px 600px at -10% 80%, rgba(0,150,255,0.03) 0%, transparent 60%)';
+  } else {
+    root.style.setProperty('--glass',  'rgba(255,255,255,0.04)');
+    root.style.setProperty('--glass2', 'rgba(255,255,255,0.07)');
+    root.style.setProperty('--card',   'rgba(12,18,32,0.7)');
+    root.style.setProperty('--neon-green',  '#00FF88');
+    root.style.setProperty('--neon-blue',   '#00D4FF');
+    root.style.setProperty('--green', '#00FF88');
+    root.style.setProperty('--red',   '#FF4D6D');
+    root.style.setProperty('--yellow','#FFB800');
+    root.style.setProperty('--blue',  '#00D4FF');
+    document.body.style.backgroundImage =
+      'radial-gradient(ellipse 1200px 800px at 80% -10%, rgba(255,107,26,0.07) 0%, transparent 60%),' +
+      'radial-gradient(ellipse 800px 600px at -10% 80%, rgba(0,212,255,0.05) 0%, transparent 60%),' +
+      'radial-gradient(ellipse 600px 400px at 50% 50%, rgba(155,89,255,0.03) 0%, transparent 60%)';
+  }
+
+  // Aplicar clase al body para ajustes adicionales
+  document.body.classList.toggle('light-mode', theme === 'light');
+  document.body.classList.toggle('dark-mode', theme !== 'light');
+
   // Marcar color activo
   document.querySelectorAll('.color-swatch').forEach(function(btn){
-    btn.style.border = btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(a)
-      ? '3px solid #fff' : '3px solid transparent';
+    var isActive = btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(a);
+    btn.style.border = isActive
+      ? ('3px solid ' + (theme === 'light' ? '#000' : '#fff'))
+      : '3px solid transparent';
+    btn.style.boxShadow = isActive ? '0 0 12px ' + hexToRgba(a, 0.5) : 'none';
   });
 
   // Actualizar botón de tema
   var btn = document.getElementById('moto-theme-btn');
-  if(btn) btn.innerHTML = theme === 'light' ? '☀️ &nbsp;Modo Claro' : '🌙 &nbsp;Modo Oscuro';
+  if(btn) btn.innerHTML = theme === 'light' ? '🌙 &nbsp;Modo Oscuro' : '☀️ &nbsp;Modo Claro';
 
   // Color picker
   var cp = document.getElementById('moto-custom-color');
   if(cp) cp.value = a;
+
+  // Guardar preferencia
+  localStorage.setItem('moto_theme', theme);
+  localStorage.setItem('moto_accent', a);
+  localStorage.setItem('moto_accent2', a2);
 }
 
 function hexToRgba(hex, alpha) {
