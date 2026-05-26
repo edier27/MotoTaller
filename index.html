@@ -207,18 +207,18 @@ body {
 .app-container { display:flex; min-height:100vh; }
 
 /* ── SIDEBAR FUTURISTA ── */
-.sidebar {
+.sidebar, #sidebar-admin {
   width:260px; height:100vh; position:fixed; top:0; left:0; z-index:200;
   display:flex; flex-direction:column; transition:width .3s cubic-bezier(.4,0,.2,1);
   background:rgba(7,11,20,0.95);
   backdrop-filter:blur(32px); -webkit-backdrop-filter:blur(32px);
   border-right:1px solid var(--border);
 }
-.sidebar::after {
+.sidebar::after, #sidebar-admin::after {
   content:''; position:absolute; top:0; right:0; bottom:0; width:1px;
   background:linear-gradient(180deg,transparent,rgba(255,107,26,0.3) 30%,rgba(255,107,26,0.3) 70%,transparent);
 }
-.sidebar.collapsed { width:72px; }
+.sidebar.collapsed, #sidebar-admin.collapsed { width:72px; }
 
 .sidebar-logo {
   padding:24px 20px; display:flex; align-items:center; gap:14px;
@@ -580,13 +580,14 @@ tr:last-child td { border-bottom:none; }
 
 /* ── Tablet horizontal (768px - 1023px) ── */
 @media (max-width:1023px) and (min-width:768px) {
-  .sidebar { width:72px; }
+  .sidebar, #sidebar-admin { width:72px; }
   .sidebar .nav-label,.sidebar .nav-group-label,.sidebar .logo-text,
-  .sidebar .user-info2,.sidebar .btn-logout { display:none !important; }
-  .sidebar .nav-item { justify-content:center; padding:13px; border-radius:12px; }
-  .sidebar .nav-item::before { display:none; }
-  .sidebar .nav-icon { font-size:20px; }
-  .sidebar .logo-orb { margin:0 auto; }
+  .sidebar .user-info2,.sidebar .btn-logout,
+  #sidebar-admin .nav-label,#sidebar-admin .nav-group-label,#sidebar-admin .logo-text,
+  #sidebar-admin .user-info2,#sidebar-admin .btn-logout { display:none !important; }
+  .sidebar .nav-item, #sidebar-admin .nav-item { justify-content:center; padding:13px; border-radius:12px; }
+  .sidebar .nav-item::before, #sidebar-admin .nav-item::before { display:none; }
+  .sidebar .nav-icon, #sidebar-admin .nav-icon { font-size:20px; }
   .topbar { left:72px; }
   .main { margin-left:72px; padding:24px; }
   .stats-grid { grid-template-columns:1fr 1fr; }
@@ -596,7 +597,7 @@ tr:last-child td { border-bottom:none; }
 /* ── Tablet vertical + móvil grande (481px - 767px) ── */
 @media (max-width:767px) {
   /* Sidebar se oculta - se activa con botón */
-  .sidebar {
+  .sidebar, #sidebar-admin {
     width:260px !important;
     transform:translateX(-100%);
     z-index:300;
@@ -604,10 +605,12 @@ tr:last-child td { border-bottom:none; }
     transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s;
   }
   .sidebar .nav-label,.sidebar .nav-group-label,.sidebar .logo-text,
-  .sidebar .user-info2,.sidebar .btn-logout { display:block !important; }
-  .sidebar .nav-item { justify-content:flex-start !important; padding:11px 14px !important; }
-  .sidebar .nav-item::before { display:block !important; }
-  .sidebar.open { transform:translateX(0) !important; }
+  .sidebar .user-info2,.sidebar .btn-logout,
+  #sidebar-admin .nav-label,#sidebar-admin .nav-group-label,#sidebar-admin .logo-text,
+  #sidebar-admin .user-info2,#sidebar-admin .btn-logout { display:block !important; }
+  .sidebar .nav-item, #sidebar-admin .nav-item { justify-content:flex-start !important; padding:11px 14px !important; }
+  .sidebar .nav-item::before, #sidebar-admin .nav-item::before { display:block !important; }
+  .sidebar.open, #sidebar-admin.open { transform:translateX(0) !important; }
 
   /* Overlay cuando sidebar abierto */
   .sidebar-overlay {
@@ -844,7 +847,7 @@ tr:last-child td { border-bottom:none; }
   </aside>
 
   <!-- CONTENIDO PRINCIPAL -->
-  <main class="main-content" id="main-content">
+  <main class="main" id="main-content">
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
@@ -2827,6 +2830,43 @@ function doLogout() {
 // ─── NAVIGATION ──────────────────────────────────
 
 // ── Toggle sidebar ───────────────────────────────────────────────────────────
+
+// ── Auto-init sidebar según tamaño de pantalla ──────────────────────────────
+function autoInitLayout() {
+  var sb = document.getElementById('sidebar-admin');
+  var tb = document.getElementById('topbar');
+  var mc = document.getElementById('main-content');
+  var w = window.innerWidth;
+
+  if (w <= 480) {
+    // Móvil pequeño: sidebar oculto, barra inferior
+    if(sb) { sb.style.display='none'; }
+    checkMobileNav();
+  } else if (w <= 767) {
+    // Móvil: sidebar oculto hasta que se abra
+    if(sb) { sb.style.display=''; sb.classList.remove('collapsed','open'); }
+    if(tb) { tb.classList.remove('collapsed'); tb.style.left='0'; }
+    if(mc) { mc.classList.remove('collapsed'); mc.style.marginLeft='0'; }
+    checkMobileNav();
+  } else if (w <= 1023) {
+    // Tablet: sidebar colapsado
+    if(sb) { sb.style.display=''; sb.classList.add('collapsed'); }
+    if(tb) { tb.classList.add('collapsed'); }
+    if(mc) { mc.classList.add('collapsed'); }
+  } else {
+    // Desktop: sidebar completo
+    if(sb) { sb.style.display=''; sb.classList.remove('collapsed'); }
+    if(tb) { tb.classList.remove('collapsed'); }
+    if(mc) { mc.classList.remove('collapsed'); }
+  }
+}
+
+window.addEventListener('load', autoInitLayout);
+window.addEventListener('resize', function(){
+  clearTimeout(window._resizeTimer);
+  window._resizeTimer = setTimeout(autoInitLayout, 200);
+});
+
 function toggleSidebar() {
   var sb = document.getElementById('sidebar-admin');
   var ov = document.getElementById('sidebar-overlay');
