@@ -1640,18 +1640,44 @@ function saveState() {
       importHistory: state.importHistory,
       activities:    state.activities,
     };
-    // Guardar en localStorage primero (instantáneo)
+    const payload = JSON.stringify(data);
     _motoLastSaveTs = Date.now();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
-    localStorage.setItem('moto_sid_v1', _motoSessionId);
-    // Guardar en Firebase con sessionId (evita eco)
-    if (window.__motoFirebaseOK && window.__motoDB) {
+
+    // ══ FIREBASE PRIMERO — caché nunca se llena ═══════════════════════════════
+    if (window.__motoFirebaseOK && window.__motoDB && navigator.onLine) {
+      // CON INTERNET: Firebase primero, localStorage se libera
       window.__motoDB.set({
-        appData: JSON.stringify(data),
+        appData: payload,
         updatedAt: new Date().toISOString(),
         savedBy: _motoSessionId
-      }).catch(function(e) { console.warn('Error guardando en Firebase:', e); });
+      }).then(function(){
+        // Firebase OK → solo guardar timestamp, borrar datos del caché
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
+          localStorage.setItem('moto_sid_v1', _motoSessionId);
+          localStorage.removeItem('moto_pending_sync');
+        } catch(e2) {}
+        console.log('[MOTO] ✅ Firebase guardado — caché liberado');
+      }).catch(function(e) {
+        // Firebase falló → guardar en localStorage como emergencia
+        try {
+          localStorage.setItem(STORAGE_KEY, payload);
+          localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
+          localStorage.setItem('moto_sid_v1', _motoSessionId);
+          localStorage.setItem('moto_pending_sync', '1');
+        } catch(e2) {}
+        console.warn('[MOTO] Firebase falló — respaldo local');
+      });
+    } else {
+      // SIN INTERNET: localStorage como emergencia temporal
+      try {
+        localStorage.setItem(STORAGE_KEY, payload);
+        localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
+        localStorage.setItem('moto_sid_v1', _motoSessionId);
+        localStorage.setItem('moto_pending_sync', '1');
+      } catch(e2) {}
+      console.warn('[MOTO] Sin internet — guardado local temporal');
     }
     const ind = document.getElementById('save-indicator');
     if(ind){ ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0.7',800); }
@@ -1888,7 +1914,7 @@ function motoDoRegister() {
         usedAt: new Date().toISOString(), codeType: lic.type, software: 'FerneyMotos'
       }, { merge: true }).catch(function(){});
       // Registrar cuenta
-      db.collection('trp_users').doc(user).set({
+      dbReg.collection('trp_users').doc(user).set({
         username: user, software: 'FerneyMotos',
         licenseCode: code, licenseType: lic.type,
         createdAt: new Date().toISOString(), lastSeen: new Date().toISOString()
@@ -2136,6 +2162,26 @@ function motoForzarSalida(motivo) {
 
 // Iniciar verificación periódica cada hora
 setInterval(motoCheckExpiry, 60 * 60 * 1000);
+
+
+// ── Auto-sync cuando vuelve el internet ──────────────────────────────────────
+window.addEventListener('online', function() {
+  var pending = localStorage.getItem('moto_pending_sync');
+  if (!pending) return;
+  if (!window.__motoFirebaseOK || !window.__motoDB) return;
+  try {
+    var raw = localStorage.getItem('mototaller_v1');
+    if (!raw) return;
+    window.__motoDB.set({
+      appData: raw,
+      updatedAt: new Date().toISOString(),
+      savedBy: _motoSessionId
+    }).then(function(){
+      localStorage.removeItem('moto_pending_sync');
+      console.log('[MOTO] ✅ Datos sincronizados automáticamente al volver internet');
+    }).catch(function(){});
+  } catch(e) {}
+});
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
