@@ -2271,12 +2271,13 @@ function loadFromFirebase() {
     if (doc.exists && doc.data().savedBy === _motoSessionId) return;
     var fbTs = (doc.exists && doc.data().updatedAt) ? new Date(doc.data().updatedAt).getTime() : 0;
 
-    // Si hay datos locales y Firebase no es más reciente → ignorar
+    // Si hay datos locales más recientes → subir a Firebase automáticamente
     if (hayDatosLocales && fbTs <= _motoLastSaveTs) {
-      if (!doc.exists) {
-        if (state.products.length > 0 || state.transactions.length > 0) {
-          saveState();
-        }
+      // Siempre subir datos locales a Firebase al iniciar (no solo cuando está vacío)
+      if (state.products.length > 0 || state.transactions.length > 0 ||
+          state.services.length > 0 || state.employees.length > 0) {
+        console.log('[MOTO] ☁️ Subiendo datos locales a Firebase automáticamente...');
+        saveState();
       }
       return;
     }
