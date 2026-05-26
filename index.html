@@ -563,25 +563,142 @@ tr:last-child td { border-bottom:none; }
 .color-swatch.active { border-color:#fff !important; box-shadow:0 0 12px rgba(255,255,255,0.3); }
 
 /* ── MOBILE ── */
-@media (max-width:900px) {
+/* ══ RESPONSIVE COMPLETO ═══════════════════════════════════════════════════ */
+
+/* ── Pantalla grande (1400px+) ── */
+@media (min-width:1400px) {
+  .sidebar { width:280px; }
+  .topbar { left:280px; }
+  .main { margin-left:280px; padding:36px 40px; }
+  .stats-grid { grid-template-columns:repeat(4,1fr); }
+}
+
+/* ── Laptop normal (1024px - 1399px) ── */
+@media (max-width:1399px) and (min-width:1024px) {
+  .stats-grid { grid-template-columns:repeat(3,1fr); }
+}
+
+/* ── Tablet horizontal (768px - 1023px) ── */
+@media (max-width:1023px) and (min-width:768px) {
   .sidebar { width:72px; }
   .sidebar .nav-label,.sidebar .nav-group-label,.sidebar .logo-text,
-  .sidebar .user-info2,.sidebar .btn-logout { display:none; }
-  .sidebar .nav-item { justify-content:center; padding:12px; }
+  .sidebar .user-info2,.sidebar .btn-logout { display:none !important; }
+  .sidebar .nav-item { justify-content:center; padding:13px; border-radius:12px; }
+  .sidebar .nav-item::before { display:none; }
+  .sidebar .nav-icon { font-size:20px; }
+  .sidebar .logo-orb { margin:0 auto; }
   .topbar { left:72px; }
-  .main { margin-left:72px; padding:20px; }
+  .main { margin-left:72px; padding:24px; }
   .stats-grid { grid-template-columns:1fr 1fr; }
+  .grid-3 { grid-template-columns:1fr 1fr; }
 }
-@media (max-width:540px) {
-  .stats-grid { grid-template-columns:1fr; }
+
+/* ── Tablet vertical + móvil grande (481px - 767px) ── */
+@media (max-width:767px) {
+  /* Sidebar se oculta - se activa con botón */
+  .sidebar {
+    width:260px !important;
+    transform:translateX(-100%);
+    z-index:300;
+    box-shadow:0 0 80px rgba(0,0,0,0.8);
+    transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s;
+  }
+  .sidebar .nav-label,.sidebar .nav-group-label,.sidebar .logo-text,
+  .sidebar .user-info2,.sidebar .btn-logout { display:block !important; }
+  .sidebar .nav-item { justify-content:flex-start !important; padding:11px 14px !important; }
+  .sidebar .nav-item::before { display:block !important; }
+  .sidebar.open { transform:translateX(0) !important; }
+
+  /* Overlay cuando sidebar abierto */
+  .sidebar-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(4px); z-index:299;
+    display:none;
+  }
+  .sidebar-overlay.show { display:block; }
+
+  /* Topbar ocupa todo el ancho */
+  .topbar { left:0 !important; padding:0 16px; height:60px; }
+  .main { margin-left:0 !important; margin-top:60px; padding:16px; }
+
+  /* Grids adaptados */
+  .stats-grid { grid-template-columns:1fr 1fr; gap:12px; }
   .grid-2,.grid-3 { grid-template-columns:1fr; }
-  .main { padding:14px; }
+  .page-title { font-size:24px; }
+  .page-header { margin-bottom:18px; }
+
+  /* Cards más compactas */
+  .card { padding:18px; border-radius:18px; }
+  .stat-card { padding:18px; }
+  .stat-value { font-size:22px; }
+
+  /* Tablas horizontales */
+  .table-wrap { border-radius:16px; overflow:hidden; }
+  table { font-size:12.5px; }
+  th,td { padding:10px 12px; }
+
+  /* Modal full-bottom en móvil */
+  .modal-overlay { align-items:flex-end; padding:0; }
+  .modal {
+    border-radius:24px 24px 0 0 !important;
+    max-width:100% !important;
+    max-height:92vh;
+    padding:28px 20px 32px;
+  }
+  .modal::after {
+    content:''; position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    width:40px; height:4px; border-radius:2px; background:rgba(255,255,255,0.15);
+  }
+
+  /* Botones más grandes en móvil */
+  .btn { padding:13px 18px; font-size:14px; }
+  .btn-sm { padding:9px 14px; font-size:12px; }
+  .btn-login { padding:18px; font-size:16px; }
+
+  /* Login box */
+  .login-box { width:100%; max-width:400px; padding:40px 28px; margin:16px; }
+}
+
+/* ── Móvil pequeño (max 480px) ── */
+@media (max-width:480px) {
+  .stats-grid { grid-template-columns:1fr; gap:10px; }
+  .main { padding:12px; }
+  .topbar { height:56px; }
+  .main { margin-top:56px; }
+  .page-title { font-size:22px; }
+  .stat-card { padding:16px; }
+  .stat-value { font-size:20px; }
+  .card { padding:16px; border-radius:16px; }
+  .login-box { padding:32px 20px; border-radius:20px; }
+  .login-logo { font-size:34px; }
+
+  /* Navegación inferior en móvil pequeño */
+  .mobile-bottom-nav {
+    position:fixed; bottom:0; left:0; right:0; z-index:200;
+    background:rgba(7,11,20,0.95); backdrop-filter:blur(24px);
+    border-top:1px solid var(--border);
+    display:flex; padding:8px 0 max(8px, env(safe-area-inset-bottom));
+    box-shadow:0 -8px 32px rgba(0,0,0,0.4);
+  }
+  .mobile-nav-item {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:8px 4px; cursor:pointer; color:var(--text3); transition:all .2s;
+    border:none; background:none; font-family:'Space Grotesk',sans-serif;
+  }
+  .mobile-nav-item.active { color:var(--accent); }
+  .mobile-nav-item .m-icon { font-size:20px; }
+  .mobile-nav-item .m-label { font-size:9px; font-weight:700; letter-spacing:.04em; white-space:nowrap; }
+  .main { margin-bottom:70px; }
   .topbar { left:0; }
-  .sidebar { transform:translateX(-100%); }
-  .sidebar.open { transform:translateX(0); width:260px; }
-  .sidebar.open .nav-label,.sidebar.open .nav-group-label,
-  .sidebar.open .logo-text,.sidebar.open .user-info2,.sidebar.open .btn-logout { display:block; }
-  .sidebar.open .nav-item { justify-content:flex-start; padding:11px 14px; }
+  .sidebar { display:none !important; }
+  .sidebar-overlay { display:none !important; }
+}
+
+/* ── Pantalla muy pequeña ── */
+@media (max-width:360px) {
+  .login-box { padding:28px 16px; }
+  .stats-grid { gap:8px; }
+  .main { padding:10px; }
 }
 </style>
 </head>
@@ -647,6 +764,8 @@ tr:last-child td { border-bottom:none; }
 
 <!-- APP PREMIUM -->
 <div id="app">
+  <!-- Overlay sidebar móvil -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
   <!-- TOPBAR FUTURISTA -->
   <header class="topbar" id="topbar">
     <div class="topbar-left">
@@ -2710,12 +2829,48 @@ function doLogout() {
 // ── Toggle sidebar ───────────────────────────────────────────────────────────
 function toggleSidebar() {
   var sb = document.getElementById('sidebar-admin');
-  var tb = document.getElementById('topbar');
-  var mc = document.getElementById('main-content') || document.querySelector('.main');
-  if (sb) sb.classList.toggle('collapsed');
-  if (tb) tb.classList.toggle('collapsed');
-  if (mc) mc.classList.toggle('collapsed');
+  var ov = document.getElementById('sidebar-overlay');
+  var isMobile = window.innerWidth <= 767;
+  if(isMobile) {
+    if(sb) sb.classList.toggle('open');
+    if(ov) ov.classList.toggle('show');
+  } else {
+    var tb = document.getElementById('topbar');
+    var mc = document.querySelector('.main');
+    if(sb) sb.classList.toggle('collapsed');
+    if(tb) tb.classList.toggle('collapsed');
+    if(mc) mc.classList.toggle('collapsed');
+  }
 }
+function closeSidebar() {
+  var sb = document.getElementById('sidebar-admin');
+  var ov = document.getElementById('sidebar-overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('show');
+}
+// Detectar tamaño de pantalla y mostrar/ocultar barra móvil
+function checkMobileNav() {
+  var mbn = document.getElementById('mobile-bottom-nav');
+  if(!mbn) return;
+  mbn.style.display = window.innerWidth <= 480 ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkMobileNav);
+// Actualizar barra inferior al cambiar página
+var _origGoPageNav = null;
+document.addEventListener('DOMContentLoaded', function(){
+  checkMobileNav();
+  // Actualizar items activos en barra inferior
+  var origGP = goPage;
+  window.goPage = function(p) {
+    origGP(p);
+    document.querySelectorAll('.mobile-nav-item').forEach(function(btn){
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('mnav-'+p);
+    if(activeBtn) activeBtn.classList.add('active');
+    closeSidebar();
+  };
+});
 
 // Update topbar title when changing page
 var _origGoPage = typeof goPage === 'function' ? goPage : null;
@@ -7655,6 +7810,26 @@ function limpiarHistorial() {
       </button>
     </div>
   </main>
+
+  <!-- BARRA INFERIOR MÓVIL -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" style="display:none">
+    <button class="mobile-nav-item active" onclick="goPage('dashboard')" id="mnav-dashboard">
+      <span class="m-icon">📊</span><span class="m-label">Inicio</span>
+    </button>
+    <button class="mobile-nav-item" onclick="goPage('ventas')" id="mnav-ventas">
+      <span class="m-icon">🛒</span><span class="m-label">Venta</span>
+    </button>
+    <button class="mobile-nav-item" onclick="goPage('servicios')" id="mnav-servicios">
+      <span class="m-icon">🔧</span><span class="m-label">Servicio</span>
+    </button>
+    <button class="mobile-nav-item" onclick="goPage('historial')" id="mnav-historial">
+      <span class="m-icon">📋</span><span class="m-label">Historial</span>
+    </button>
+    <button class="mobile-nav-item" onclick="goPage('inventario')" id="mnav-inventario">
+      <span class="m-icon">📦</span><span class="m-label">Stock</span>
+    </button>
+  </nav>
+
 </div>
 </body>
 </html>
