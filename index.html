@@ -2580,7 +2580,10 @@ function motoEntrarSistema(userData) {
     // Nuevo usuario con licencia → entrar directamente como admin
     currentUser = { user: u, pass: p, name: u.charAt(0).toUpperCase()+u.slice(1), role: 'admin', avatar: u.charAt(0).toUpperCase() };
     document.getElementById('license-screen').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'none';
+    var _ls = document.getElementById('license-screen');
+    var _ls2 = document.getElementById('login-screen');
+    if(_ls) _ls.style.display = 'none';
+    if(_ls2) _ls2.style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('emp-panel').style.display = 'none';
     document.getElementById('user-avatar').textContent = currentUser.avatar;
@@ -2626,8 +2629,10 @@ function motoCheckSession() {
 
 // Ejecutar al cargar la página
 window.addEventListener('load', function() {
-  // Aumentar tiempo para que Firebase y state carguen completamente
-  setTimeout(motoCheckSession, 800);
+  // Inicializar layout responsive
+  if(typeof autoInitLayout === 'function') setTimeout(autoInitLayout, 50);
+  // Verificar sesión con delay para que Firebase inicialice
+  setTimeout(motoCheckSession, 1000);
 });
 
 
@@ -3042,7 +3047,7 @@ function autoInitLayout() {
   }
 }
 
-window.addEventListener('load', autoInitLayout);
+// autoInitLayout called in main load handler
 window.addEventListener('resize', function(){
   clearTimeout(window._resizeTimer);
   window._resizeTimer = setTimeout(autoInitLayout, 200);
@@ -3080,23 +3085,23 @@ window.addEventListener('resize', checkMobileNav);
 var _origGoPageNav = null;
 document.addEventListener('DOMContentLoaded', function(){
   checkMobileNav();
-  // Actualizar items activos en barra inferior
-  var origGP = goPage;
-  window.goPage = function(p) {
-    origGP(p);
-    document.querySelectorAll('.mobile-nav-item').forEach(function(btn){
-      btn.classList.remove('active');
-    });
-    var activeBtn = document.getElementById('mnav-'+p);
-    if(activeBtn) activeBtn.classList.add('active');
-    closeSidebar();
-  };
 });
 
-// Update topbar title when changing page
-var _origGoPage = typeof goPage === 'function' ? goPage : null;
+var _currentPage = 'dashboard';
+function renderCurrentView() {
+  if(_currentPage === 'dashboard') renderDashboard();
+  else if(_currentPage === 'inventario') renderInventory();
+  else if(_currentPage === 'historial') renderHistory();
+  else if(_currentPage === 'servicios') renderServices();
+  else if(_currentPage === 'ventas') renderSaleProducts();
+  else if(_currentPage === 'reportes') renderReports();
+}
+function updateDashboard() { if(typeof renderDashboard === 'function') renderDashboard(); }
+function renderProducts()     { if(typeof renderInventory === 'function') renderInventory(); }
+function renderTransactions() { if(typeof renderHistory === 'function') renderHistory(); }
 
 function goPage(p) {
+  _currentPage = p;
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   // Update topbar title
@@ -3119,6 +3124,12 @@ function goPage(p) {
   if(p==='empleados') { showEmpMain(); }
   if(p==='configuracion') { renderCfgPage(); motoRenderLicInfo(); }
   if(p==='importar') { renderReceivingHistory(); setTimeout(()=>{ const el=document.getElementById('recv-barcode'); if(el) el.focus(); },80); }
+  // Actualizar barra inferior móvil
+  document.querySelectorAll('.mobile-nav-item').forEach(function(btn){ btn.classList.remove('active'); });
+  var activeBtn = document.getElementById('mnav-'+p);
+  if(activeBtn) activeBtn.classList.add('active');
+  // Cerrar sidebar en móvil
+  closeSidebar();
 }
 
 // ─── MODAL ───────────────────────────────────────
@@ -3145,7 +3156,7 @@ function toast(msg, type='info') {
 
 // ─── DASHBOARD ───────────────────────────────────
 function renderDashboard() {
-  const now = new Date();
+  const now = typeof colombiaDate === 'function' ? colombiaDate() : new Date();
   document.getElementById('dash-date').textContent = now.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const today = now.toDateString();
   // Separar ventas reales de pagos a empleados
