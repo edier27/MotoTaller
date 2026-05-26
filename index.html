@@ -2524,18 +2524,21 @@ function motoDoRegister() {
     }
     // Guardar usuario localmente
     var userData = { username: user, password: pass, licenseCode: code, licenseType: lic.type, software: 'FerneyMotos', createdAt: new Date().toISOString() };
-    localStorage.setItem(MOTO_USER_KEY + '_' + user, JSON.stringify(userData));
-    localStorage.setItem(MOTO_LIC_KEY, JSON.stringify({ user: user, licenseCode: code, type: lic.type }));
+    try {
+      localStorage.setItem(MOTO_USER_KEY + '_' + user, JSON.stringify(userData));
+      localStorage.setItem(MOTO_LIC_KEY, JSON.stringify({ user: user, licenseCode: code, type: lic.type, activatedAt: new Date().toISOString() }));
+    } catch(e2) {}
 
     // Registrar en Firebase (misma colección que ACCE PRO)
-    if (db) {
+    var dbF = window.__licDB;
+    if (dbF) {
       // Registrar uso del código
-      db.collection('trp_users').doc(codeKey).set({
+      dbF.collection('trp_users').doc(codeKey).set({
         code: code, used: true, usedBy: user,
         usedAt: new Date().toISOString(), codeType: lic.type, software: 'FerneyMotos'
       }, { merge: true }).catch(function(){});
-      // Registrar cuenta
-      dbReg.collection('trp_users').doc(user).set({
+      // Registrar cuenta del usuario
+      dbF.collection('trp_users').doc(user).set({
         username: user, software: 'FerneyMotos',
         licenseCode: code, licenseType: lic.type,
         createdAt: new Date().toISOString(), lastSeen: new Date().toISOString()
