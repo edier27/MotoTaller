@@ -48,6 +48,7 @@
     }
   </script>
 <style>
+
 /* ══════════════════════════════════════════════════════════════════════════════
    FERNEYMOTOS — INTERFACE FUTURISTA 2026
    Glassmorphism · Neón · Micro-animaciones · Ultra moderno
@@ -124,83 +125,126 @@ body {
 @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 @keyframes glow-pulse { 0%,100%{box-shadow:0 0 20px var(--accent-glow)} 50%{box-shadow:0 0 40px var(--accent-glow),0 0 60px rgba(255,107,26,0.2)} }
 
-/* ── PANTALLA LOGIN ── */
+/* ── GLOBALMOTOS PRO — Login Split Panel (estilo ACCE PRO) ── */
 #login-screen {
-  min-height:100vh; display:flex; align-items:center; justify-content:center;
-  position:relative; overflow:hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  background: #f4f4f8;
 }
-#login-screen::before {
-  content:''; position:absolute; inset:0;
+.login-left {
+  flex: 1 1 54%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2a1a0e 0%, #3d2410 35%, #5c3210 65%, #E87A00 180%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 50px;
+  overflow: hidden;
+}
+.login-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle 600px at 20% 50%, rgba(255,107,26,0.1) 0%, transparent 60%),
-    radial-gradient(circle 400px at 80% 20%, rgba(0,212,255,0.08) 0%, transparent 60%),
-    radial-gradient(circle 300px at 60% 90%, rgba(155,89,255,0.06) 0%, transparent 60%);
-  pointer-events:none;
+    radial-gradient(ellipse 70% 50% at 65% 35%, rgba(232,122,0,0.28) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 70% at 25% 85%, rgba(255,140,40,0.14) 0%, transparent 60%);
+  pointer-events: none;
 }
-.login-box {
-  position:relative; z-index:1;
-  background:var(--glass);
-  backdrop-filter:blur(40px);
-  -webkit-backdrop-filter:blur(40px);
-  border:1px solid var(--border2);
-  border-radius:28px;
-  padding:52px 48px;
-  width:440px;
-  box-shadow:0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
-  animation:fade-up .6s ease;
+.login-left-brand {
+  display: flex; align-items: center; gap: 13px;
+  margin-bottom: 28px; position: relative; z-index: 2;
 }
-.login-box::before {
-  content:''; position:absolute; top:0; left:20px; right:20px; height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,107,26,0.5),transparent);
+.login-left-icon {
+  width: 48px; height: 48px; background: #E87A00;
+  border-radius: 13px; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; box-shadow: 0 4px 20px rgba(232,122,0,0.5);
 }
-.login-logo {
-  font-family:'Rajdhani',sans-serif; font-size:42px; font-weight:800;
-  background:linear-gradient(135deg,#FF6B1A 0%,#FF8C42 50%,#FFB800 100%);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  letter-spacing:4px; text-align:center; margin-bottom:6px;
-  filter:drop-shadow(0 0 20px rgba(255,107,26,0.4));
+.login-left-brand-name { font-size: 19px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.login-left-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 20px; padding: 6px 14px; color: rgba(255,255,255,0.85);
+  font-size: 12px; font-weight: 600; margin-bottom: 26px;
+  position: relative; z-index: 2; width: fit-content;
 }
-.login-sub {
-  text-align:center; color:var(--text2); font-size:11px;
-  letter-spacing:3px; text-transform:uppercase; margin-bottom:40px;
+.login-left-headline {
+  font-size: 40px; font-weight: 800; color: #fff;
+  line-height: 1.12; margin-bottom: 16px;
+  position: relative; z-index: 2;
 }
-.role-tabs { display:none; }
-.field { margin-bottom:18px; }
+.login-left-headline span { color: #FBB040; }
+.login-left-desc {
+  font-size: 15px; color: rgba(255,255,255,0.62); line-height: 1.6;
+  max-width: 380px; margin-bottom: 38px; position: relative; z-index: 2;
+}
+.login-left-features { display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 2; }
+.login-left-feature { display: flex; align-items: center; gap: 14px; }
+.login-left-feature-icon {
+  width: 40px; height: 40px; background: rgba(255,255,255,0.09);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.login-left-feature-text { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); }
+.login-left-footer { position: absolute; bottom: 26px; left: 50px; font-size: 12px; color: rgba(255,255,255,0.3); z-index: 2; }
+.login-moto-deco {
+  position: absolute; right: -50px; bottom: 40px;
+  width: 420px; opacity: 0.09; pointer-events: none; z-index: 1;
+}
+.login-right {
+  width: 46%; max-width: 560px; min-width: 380px; min-height: 100vh; background: #fff;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 60px 46px;
+}
+.login-right-logo {
+  width: 70px; height: 70px; background: #E87A00; border-radius: 19px;
+  display: flex; align-items: center; justify-content: center; font-size: 33px;
+  margin-bottom: 17px; box-shadow: 0 8px 24px rgba(232,122,0,0.32);
+}
+.login-right-title { font-size: 23px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; letter-spacing: -0.4px; }
+.login-right-sub { font-size: 13px; color: #999; margin-bottom: 34px; }
+.login-right-form { width: 100%; max-width: 360px; }
+.field { margin-bottom: 15px; }
 .field label {
-  font-size:10px; font-weight:700; color:var(--text2); display:block;
-  margin-bottom:8px; letter-spacing:.12em; text-transform:uppercase;
+  display: block; font-size: 10px; font-weight: 700; color: #aaa;
+  letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 7px;
 }
 .field input {
-  width:100%; padding:14px 18px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid var(--border2);
-  border-radius:12px; color:var(--text);
-  font-family:'Space Grotesk',sans-serif; font-size:14px;
-  outline:none; transition:all .25s;
+  width: 100%; padding: 14px 15px; border: 1.5px solid #ebebf0; border-radius: 12px;
+  font-size: 14px; font-family: inherit; color: #1a1a2e; background: #f7f7fa;
+  outline: none; transition: all .2s;
 }
-.field input:focus {
-  border-color:var(--accent);
-  background:rgba(255,107,26,0.06);
-  box-shadow:0 0 0 3px rgba(255,107,26,0.12);
-}
-.field input::placeholder { color:var(--text3); }
+.field input:focus { border-color: #E87A00; box-shadow: 0 0 0 3px rgba(232,122,0,0.12); background: #fff; }
+.field input::placeholder { color: #c0c0c8; }
 .btn-login {
-  width:100%; padding:16px;
-  background:linear-gradient(135deg,#FF6B1A,#FF4500);
-  border:none; border-radius:14px;
-  color:#fff; font-family:'Space Grotesk',sans-serif;
-  font-size:15px; font-weight:800; letter-spacing:.04em;
-  cursor:pointer; transition:all .25s; margin-top:8px;
-  box-shadow:0 8px 32px rgba(255,107,26,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
-  position:relative; overflow:hidden;
+  width: 100%; padding: 15px; background: #E87A00; color: #fff;
+  font-size: 15px; font-weight: 700; font-family: inherit; border: none;
+  border-radius: 12px; cursor: pointer; margin-top: 6px; letter-spacing: 0.3px;
+  transition: all .2s; box-shadow: 0 4px 18px rgba(232,122,0,0.38);
 }
-.btn-login::after {
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
-  transform:translateX(-100%); transition:.6s;
+.btn-login:hover { background: #CC6B00; box-shadow: 0 6px 22px rgba(232,122,0,0.48); }
+.btn-login:active { transform: scale(0.98); }
+.login-divider { text-align: center; margin: 16px 0; color: #ddd; font-size: 12px; position: relative; }
+.login-divider::before, .login-divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: #ebebf0; }
+.login-divider::before { left: 0; } .login-divider::after { right: 0; }
+.btn-create {
+  width: 100%; padding: 13px; background: transparent; color: #1a1a2e;
+  font-size: 14px; font-weight: 600; font-family: inherit; border: 1.5px solid #ebebf0;
+  border-radius: 12px; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.btn-login:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(255,107,26,0.5); }
-.btn-login:hover::after { transform:translateX(100%); }
+.btn-create:hover { border-color: #E87A00; background: rgba(232,122,0,0.04); }
+.login-error-msg { color: #e53e3e; font-size: 12px; text-align: center; margin-top: 12px; min-height: 16px; }
+@media (max-width: 768px) {
+  #login-screen { flex-direction: column; }
+  .login-left { min-height: auto; padding: 40px 28px 32px; }
+  .login-left-headline { font-size: 28px; }
+  .login-left-features { display: none; }
+  .login-right { width: 100%; padding: 36px 24px; min-height: auto; }
+  .login-moto-deco { display: none; }
+}
 
 /* ── APP ── */
 #app { display:none; }
@@ -838,66 +882,221 @@ body.light-mode .mobile-nav-item.active {
   .stats-grid { gap:8px; }
   .main { padding:10px; }
 }
+
+/* ── SERVICIOS FRECUENTES — GRID DE TARJETAS ── */
+.serv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+.serv-card {
+  background: var(--card, #fff);
+  border: 1.5px solid rgba(232,122,0,0.15);
+  border-radius: 14px;
+  padding: 14px 10px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform .15s, box-shadow .15s, border-color .15s, background .15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.serv-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(232,122,0,0.18);
+  border-color: rgba(232,122,0,0.5);
+  background: rgba(232,122,0,0.06);
+}
+.serv-card:active { transform: scale(0.97); }
+.serv-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+.serv-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text, #1a1a2e);
+  line-height: 1.3;
+}
+.serv-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #E87A00;
+}
+
 </style>
 </head>
 <body>
 
-<!-- PANTALLA DE LICENCIA -->
-<div id="license-screen" style="display:none;position:fixed;inset:0;background:#090E1A;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;font-family:Inter,sans-serif">
-  <div style="background:#0F1729;border:1px solid #1E2D45;border-radius:20px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.5)">
-    <div style="text-align:center;margin-bottom:28px">
-      <div style="font-family:Rajdhani,sans-serif;font-size:32px;font-weight:700;color:#10E08A;letter-spacing:2px">⚙ FERNEYMOTOS</div>
-      <div style="color:#7A8EAA;font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:1px">Sistema de Gestión — Activación</div>
+<!-- PANTALLA DE LICENCIA (estilo split-panel ACCE PRO motos) -->
+<div id="license-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:#f4f4f8;">
+  <div style="display:flex;align-items:stretch;min-height:100vh;width:100%;" class="lic-split">
+
+    <!-- Panel izquierdo -->
+    <div class="lic-left">
+      <svg class="lic-moto-deco" viewBox="0 0 500 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="115" cy="225" r="68" stroke="white" stroke-width="16"/>
+        <circle cx="115" cy="225" r="28" stroke="white" stroke-width="9"/>
+        <circle cx="385" cy="225" r="68" stroke="white" stroke-width="16"/>
+        <circle cx="385" cy="225" r="28" stroke="white" stroke-width="9"/>
+        <path d="M115 225 L160 135 L245 128 L305 158 L385 225" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M245 128 L262 78 L312 74 L332 128" stroke="white" stroke-width="9" stroke-linecap="round"/>
+        <path d="M160 135 L205 148 L245 128" stroke="white" stroke-width="7" stroke-linecap="round"/>
+        <path d="M305 158 L325 138 L362 143 L385 168" stroke="white" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="250" cy="172" rx="58" ry="18" fill="white" opacity="0.3"/>
+      </svg>
+      <div class="lic-left-brand"><div class="lic-left-icon">🏍️</div><div class="lic-left-name">GlobalMotos Pro</div></div>
+      <div class="lic-left-badge">✦ Software de gestión #1</div>
+      <div class="lic-left-headline">Gestiona tu taller<br><span>sin complicaciones</span></div>
+      <div class="lic-left-desc">Servicios, inventario, ventas y catálogo online en un solo lugar. Todo sincronizado en la nube.</div>
+      <div class="lic-left-features">
+        <div class="lic-left-feat"><div class="lic-left-feat-ic">🔧</div><div class="lic-left-feat-tx">Control total de servicios y reparaciones</div></div>
+        <div class="lic-left-feat"><div class="lic-left-feat-ic">📦</div><div class="lic-left-feat-tx">Inventario y repuestos sincronizados</div></div>
+        <div class="lic-left-feat"><div class="lic-left-feat-ic">☁️</div><div class="lic-left-feat-tx">Respaldo automático en la nube</div></div>
+      </div>
+      <div class="lic-left-footer">© 2026 GlobalMotos Pro · Tecnología para tu negocio</div>
     </div>
-    <!-- Tabs -->
-    <div style="display:flex;background:#141E32;border-radius:12px;padding:4px;gap:4px;margin-bottom:24px" id="lic-tabs">
-      <button onclick="motoShowTab('login')" id="tab-login" style="flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:700;font-size:14px;background:#10E08A;color:#0D1B35;transition:all 0.15s">Iniciar Sesión</button>
-      <button onclick="motoShowTab('register')" id="tab-register" style="flex:1;padding:10px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:700;font-size:14px;background:transparent;color:#7A8EAA;transition:all 0.15s">Crear Cuenta</button>
+
+    <!-- Panel derecho -->
+    <div class="lic-right">
+      <div class="lic-right-logo">🏍️</div>
+      <div class="lic-right-title">GLOBALMOTOS PRO</div>
+      <div class="lic-right-sub">Bienvenido de nuevo · Inicia sesión</div>
+
+      <!-- Tabs -->
+      <div class="lic-tabs" id="lic-tabs">
+        <button onclick="motoShowTab('login')" id="tab-login" class="lic-tab active">Iniciar Sesión</button>
+        <button onclick="motoShowTab('register')" id="tab-register" class="lic-tab">Crear Cuenta</button>
+      </div>
+
+      <!-- Login tab -->
+      <div id="lic-panel-login" class="lic-form">
+        <div class="lic-field"><label>Usuario</label><input id="moto-login-user" type="text" placeholder="Tu usuario"></div>
+        <div class="lic-field"><label>Contraseña</label><input id="moto-login-pass" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')motoDoLogin()"></div>
+        <button onclick="motoDoLogin()" class="lic-btn">Entrar al Sistema</button>
+        <div id="moto-login-error" style="color:#e53e3e;font-size:13px;text-align:center;margin-top:12px;display:none"></div>
+      </div>
+
+      <!-- Register tab -->
+      <div id="lic-panel-register" class="lic-form" style="display:none">
+        <div class="lic-field"><label>Código de Activación</label><input id="moto-reg-code" type="text" placeholder="Ej: PRO-XXXXX-YYYYY" style="text-transform:uppercase;color:#E87A00;font-weight:700"></div>
+        <div class="lic-field"><label>Usuario</label><input id="moto-reg-user" type="text" placeholder="Elige un usuario"></div>
+        <div class="lic-field"><label>Contraseña</label><input id="moto-reg-pass" type="password" placeholder="Mínimo 4 caracteres"></div>
+        <button onclick="motoDoRegister()" class="lic-btn">Crear Cuenta</button>
+        <div id="moto-reg-error" style="color:#e53e3e;font-size:13px;text-align:center;margin-top:12px;display:none"></div>
+      </div>
+
+      <div class="lic-right-footer">GlobalMotos Pro · Software para talleres</div>
     </div>
-    <!-- Login tab -->
-    <div id="lic-panel-login">
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Usuario</label>
-        <input id="moto-login-user" type="text" placeholder="Tu usuario" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
-      </div>
-      <div style="margin-bottom:20px">
-        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Contraseña</label>
-        <input id="moto-login-pass" type="password" placeholder="••••••" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
-      </div>
-      <button onclick="motoDoLogin()" style="width:100%;padding:14px;background:#10E08A;border:none;border-radius:12px;color:#0D1B35;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Entrar al Sistema</button>
-      <div id="moto-login-error" style="color:#EF4444;font-size:13px;text-align:center;margin-top:12px;display:none"></div>
-    </div>
-    <!-- Register tab -->
-    <div id="lic-panel-register" style="display:none">
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Código de Activación</label>
-        <input id="moto-reg-code" type="text" placeholder="Ej: PRO-XXXXX-YYYYY" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#10E08A;font-size:15px;font-weight:700;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase">
-      </div>
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Usuario</label>
-        <input id="moto-reg-user" type="text" placeholder="Elige un usuario" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
-      </div>
-      <div style="margin-bottom:20px">
-        <label style="font-size:12px;font-weight:700;color:#7A8EAA;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px">Contraseña</label>
-        <input id="moto-reg-pass" type="password" placeholder="Mínimo 4 caracteres" style="width:100%;padding:12px 16px;background:#141E32;border:1px solid #1E2D45;border-bottom:2px solid #1E2D45;border-radius:12px;color:#F0F4FF;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
-      </div>
-      <button onclick="motoDoRegister()" style="width:100%;padding:14px;background:#10E08A;border:none;border-radius:12px;color:#0D1B35;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Crear Cuenta</button>
-      <div id="moto-reg-error" style="color:#EF4444;font-size:13px;text-align:center;margin-top:12px;display:none"></div>
-    </div>
-    <div style="text-align:center;margin-top:20px;color:#7A8EAA;font-size:11px">FerneyMotos · GlobalAcce · Software para talleres</div>
   </div>
 </div>
 
-<!-- LOGIN (original - ahora oculto, reemplazado por pantalla de licencia) -->
-<div id="login-screen" style="display:none">
-  <div class="login-box">
-    <div class="login-logo">⚙ FERNEYMOTOS</div>
-    <div class="login-sub">Sistema de Gestión Integral</div>
+<style>
+.lic-left{flex:1 1 54%;min-height:100vh;background:linear-gradient(135deg,#2a1a0e 0%,#3d2410 35%,#5c3210 65%,#E87A00 180%);position:relative;display:flex;flex-direction:column;justify-content:center;padding:60px 50px;overflow:hidden;}
+.lic-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 65% 35%,rgba(232,122,0,0.28) 0%,transparent 70%),radial-gradient(ellipse 50% 70% at 25% 85%,rgba(255,140,40,0.14) 0%,transparent 60%);pointer-events:none;}
+.lic-moto-deco{position:absolute;right:-50px;bottom:40px;width:420px;opacity:0.09;pointer-events:none;z-index:1;}
+.lic-left-brand{display:flex;align-items:center;gap:13px;margin-bottom:28px;position:relative;z-index:2;}
+.lic-left-icon{width:48px;height:48px;background:#E87A00;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 20px rgba(232,122,0,0.5);}
+.lic-left-name{font-size:19px;font-weight:800;color:#fff;}
+.lic-left-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.16);border-radius:20px;padding:6px 14px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:600;margin-bottom:26px;position:relative;z-index:2;width:fit-content;}
+.lic-left-headline{font-size:40px;font-weight:800;color:#fff;line-height:1.12;margin-bottom:16px;position:relative;z-index:2;}
+.lic-left-headline span{color:#FBB040;}
+.lic-left-desc{font-size:15px;color:rgba(255,255,255,0.62);line-height:1.6;max-width:380px;margin-bottom:38px;position:relative;z-index:2;}
+.lic-left-features{display:flex;flex-direction:column;gap:15px;position:relative;z-index:2;}
+.lic-left-feat{display:flex;align-items:center;gap:14px;}
+.lic-left-feat-ic{width:40px;height:40px;background:rgba(255,255,255,0.09);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.lic-left-feat-tx{font-size:14px;font-weight:500;color:rgba(255,255,255,0.85);}
+.lic-left-footer{position:absolute;bottom:26px;left:50px;font-size:12px;color:rgba(255,255,255,0.3);z-index:2;}
+.lic-right{width:46%;max-width:560px;min-width:380px;min-height:100vh;background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:50px 6%;}
+.lic-right-logo{width:70px;height:70px;background:#E87A00;border-radius:19px;display:flex;align-items:center;justify-content:center;font-size:33px;margin-bottom:17px;box-shadow:0 8px 24px rgba(232,122,0,0.32);}
+.lic-right-title{font-size:23px;font-weight:800;color:#1a1a2e;margin-bottom:4px;}
+.lic-right-sub{font-size:13px;color:#999;margin-bottom:28px;}
+.lic-tabs{display:flex;background:#f0f0f5;border-radius:12px;padding:4px;gap:4px;margin-bottom:24px;width:100%;max-width:360px;}
+.lic-tab{flex:1;padding:11px;border:none;border-radius:9px;cursor:pointer;font-family:inherit;font-weight:700;font-size:14px;background:transparent;color:#999;transition:all 0.15s;}
+.lic-tab.active{background:#E87A00;color:#fff;box-shadow:0 2px 8px rgba(232,122,0,0.3);}
+.lic-form{width:100%;max-width:360px;}
+.lic-field{margin-bottom:15px;}
+.lic-field label{display:block;font-size:10px;font-weight:700;color:#aaa;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:7px;}
+.lic-field input{width:100%;padding:14px 15px;border:1.5px solid #ebebf0;border-radius:12px;font-size:14px;font-family:inherit;color:#1a1a2e;background:#f7f7fa;outline:none;transition:all .2s;box-sizing:border-box;}
+.lic-field input:focus{border-color:#E87A00;box-shadow:0 0 0 3px rgba(232,122,0,0.12);background:#fff;}
+.lic-field input::placeholder{color:#c0c0c8;}
+.lic-btn{width:100%;padding:15px;background:#E87A00;color:#fff;font-size:15px;font-weight:700;font-family:inherit;border:none;border-radius:12px;cursor:pointer;margin-top:6px;transition:all .2s;box-shadow:0 4px 18px rgba(232,122,0,0.38);}
+.lic-btn:hover{background:#CC6B00;}
+.lic-btn:active{transform:scale(0.98);}
+.lic-right-footer{text-align:center;margin-top:22px;color:#bbb;font-size:11px;}
+@media(max-width:768px){
+  .lic-split{flex-direction:column;}
+  .lic-left{min-height:auto;padding:36px 26px 28px;}
+  .lic-left-headline{font-size:26px;}
+  .lic-left-features{display:none;}
+  .lic-right{width:100%;padding:32px 22px;min-height:auto;}
+  .lic-moto-deco{display:none;}
+}
+</style>
 
-    <div class="field"><label>Usuario</label><input type="text" id="login-user" placeholder="Usuario"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••"></div>
-    <button class="btn-login" onclick="doLogin()">Ingresar al Sistema</button>
+<!-- LOGIN (original - ahora oculto) -->
+
+<div id="login-screen" style="display:none">
+
+  <!-- Panel izquierdo -->
+  <div class="login-left">
+    <svg class="login-moto-deco" viewBox="0 0 500 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="115" cy="225" r="68" stroke="white" stroke-width="16"/>
+      <circle cx="115" cy="225" r="28" stroke="white" stroke-width="9"/>
+      <circle cx="385" cy="225" r="68" stroke="white" stroke-width="16"/>
+      <circle cx="385" cy="225" r="28" stroke="white" stroke-width="9"/>
+      <path d="M115 225 L160 135 L245 128 L305 158 L385 225" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M245 128 L262 78 L312 74 L332 128" stroke="white" stroke-width="9" stroke-linecap="round"/>
+      <path d="M160 135 L205 148 L245 128" stroke="white" stroke-width="7" stroke-linecap="round"/>
+      <path d="M305 158 L325 138 L362 143 L385 168" stroke="white" stroke-width="7" stroke-linecap="round"/>
+      <ellipse cx="250" cy="172" rx="58" ry="18" fill="white" opacity="0.3"/>
+    </svg>
+
+    <div class="login-left-brand">
+      <div class="login-left-icon">🏍️</div>
+      <div class="login-left-brand-name">GlobalMotos Pro</div>
+    </div>
+
+    <div class="login-left-badge">✦ Software de gestión #1</div>
+
+    <div class="login-left-headline">Gestiona tu taller<br><span>sin complicaciones</span></div>
+
+    <div class="login-left-desc">Servicios, inventario, ventas y catálogo online en un solo lugar. Todo sincronizado en la nube.</div>
+
+    <div class="login-left-features">
+      <div class="login-left-feature"><div class="login-left-feature-icon">🔧</div><div class="login-left-feature-text">Control total de servicios y reparaciones</div></div>
+      <div class="login-left-feature"><div class="login-left-feature-icon">📦</div><div class="login-left-feature-text">Inventario y repuestos sincronizados</div></div>
+      <div class="login-left-feature"><div class="login-left-feature-icon">☁️</div><div class="login-left-feature-text">Respaldo automático en la nube</div></div>
+    </div>
+
+    <div class="login-left-footer">© 2026 GlobalMotos Pro · Tecnología para tu negocio</div>
   </div>
+
+  <!-- Panel derecho -->
+  <div class="login-right">
+    <div class="login-right-logo">🏍️</div>
+    <div class="login-right-title">GLOBALMOTOS PRO</div>
+    <div class="login-right-sub">Bienvenido de nuevo · Inicia sesión</div>
+    <div class="login-right-form">
+      <div class="field">
+        <label>Usuario</label>
+        <input type="text" id="login-user" placeholder="Tu usuario" autocomplete="username"
+               oninput="var e=document.getElementById('login-error-msg');if(e)e.textContent=''">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Iniciar sesión</button>
+      <div class="login-divider">o</div>
+      <button class="btn-create" onclick="if(typeof irCrearCuenta==='function')irCrearCuenta()">+ Crear cuenta nueva</button>
+      <div class="login-error-msg" id="login-error-msg"></div>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- APP PREMIUM -->
@@ -2499,10 +2698,10 @@ function motoVerificarCodigo(raw) {
 function motoShowTab(tab) {
   document.getElementById('lic-panel-login').style.display    = tab === 'login'    ? 'block' : 'none';
   document.getElementById('lic-panel-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').style.background    = tab === 'login'    ? '#10E08A' : 'transparent';
-  document.getElementById('tab-login').style.color         = tab === 'login'    ? '#0D1B35' : '#7A8EAA';
-  document.getElementById('tab-register').style.background = tab === 'register' ? '#10E08A' : 'transparent';
-  document.getElementById('tab-register').style.color      = tab === 'register' ? '#0D1B35' : '#7A8EAA';
+  var tl = document.getElementById('tab-login');
+  var tr = document.getElementById('tab-register');
+  if(tab === 'login'){ tl.classList.add('active'); tr.classList.remove('active'); }
+  else { tr.classList.add('active'); tl.classList.remove('active'); }
 }
 
 function motoShowError(id, msg) {
@@ -3200,7 +3399,7 @@ function doLogin() {
     const emp = state.employees.find(e=>e.usuario===u&&e.password===p);
     if(emp) found = {user:emp.usuario,pass:emp.password,name:emp.nombre,role:'employee',avatar:emp.nombre[0].toUpperCase()};
   }
-  if(!found){ toast('Credenciales incorrectas','error'); return; }
+  if(!found){ var em=document.getElementById('login-error-msg'); if(em) em.textContent='Usuario o contraseña incorrectos'; toast('Credenciales incorrectas','error'); return; }
   currentUser = found;
   document.getElementById('login-screen').style.display='none';
   if(found.role==='admin') {
