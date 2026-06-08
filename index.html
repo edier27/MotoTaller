@@ -2396,7 +2396,7 @@ body.light-mode .mobile-nav-item.active {
         </div>
       </div>
       <button style="color:#fff;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;"
-        onclick="var m=document.getElementById('modal-emp-detalle');if(m){m.classList.remove('open');m.style.display=''}">×</button>
+        onclick="var m=document.getElementById('modal-emp-detalle');if(m){m.style.cssText='display:none'}">×</button>
     </div>
 
     <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
@@ -2459,7 +2459,7 @@ body.light-mode .mobile-nav-item.active {
 
     <!-- Footer botones -->
     <div class="modal-footer" style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn btn-secondary" onclick="var m=document.getElementById('modal-emp-detalle');if(m){m.classList.remove('open');m.style.display=''}">Cancelar</button>
+      <button class="btn btn-secondary" onclick="var m=document.getElementById('modal-emp-detalle');if(m){m.style.cssText='display:none'}">Cancelar</button>
       <button class="btn btn-primary" onclick="mpRegistrar()" style="font-weight:700;font-size:15px;padding:11px 28px;">
         ✓ Registrar Pago
       </button>
@@ -2569,21 +2569,32 @@ function loadFromFirebase() {
     }
     _startupLoad = false;
 
-    // Si hay datos locales más recientes → subir a Firebase automáticamente
-    if (hayDatosLocales && fbTs <= _motoLastSaveTs) {
-      if (state.products.length > 0 || state.transactions.length > 0 ||
-          state.services.length > 0 || state.employees.length > 0) {
-        console.log('[MOTO] ☁️ Subiendo datos locales a Firebase...');
-        saveState();
-      }
-      return;
+    // ══ LÓGICA DE STARTUP - NUNCA PERDER DATOS ══
+    var localTotal = (state.products.length||0) + (state.transactions.length||0) +
+                     (state.services.length||0) + (state.employees.length||0);
+    var fbData = doc.exists ? doc.data() : null;
+    var fbTotal = 0;
+    if (fbData && fbData.appData) {
+      try {
+        var fbParsed = JSON.parse(fbData.appData);
+        fbTotal = ((fbParsed.products||[]).length) + ((fbParsed.transactions||[]).length) +
+                  ((fbParsed.services||[]).length) + ((fbParsed.employees||[]).length);
+      } catch(e) {}
     }
-    // ✅ Si NO hay datos locales → siempre restaurar de Firebase sin importar timestamp
-    if (!hayDatosLocales && doc.exists && doc.data().appData) {
-      console.log('[MOTO] 🔄 Local vacío — restaurando TODOS los datos desde Firebase...');
-      // Continuar hacia el bloque de restauración abajo
-    } else if (!hayDatosLocales && !doc.exists) {
-      console.log('[MOTO] Firebase vacío y sin datos locales — base limpia');
+    
+    console.log('[MOTO] STARTUP: local=' + localTotal + ' Firebase=' + fbTotal);
+    
+    // Si Firebase tiene MÁS datos → siempre cargar Firebase (prioridad máxima)
+    if (fbTotal > localTotal) {
+      console.log('[MOTO] Firebase tiene más datos → cargando...');
+      // Continúa al bloque de carga abajo
+    } else if (localTotal > 0 && fbTotal <= localTotal) {
+      // Local tiene datos y Firebase tiene igual o menos → subir local a Firebase
+      console.log('[MOTO] Local más completo → subiendo a Firebase');
+      saveState();
+      return;
+    } else if (localTotal === 0 && fbTotal === 0) {
+      console.log('[MOTO] Todo vacío — base limpia');
       return;
     }
 // [Checks anteriores consolidados en el bloque de arriba]
@@ -6188,6 +6199,8 @@ if (typeof window !== 'undefined') {
 
 <script>
 
+function abrirBuscar<script>
+
 function abrirBuscarCliente() {
   document.getElementById('client-search-input').value = '';
   document.getElementById('client-search-results').innerHTML =
@@ -7437,9 +7450,16 @@ function rgtRenderBotones() {
     btnPagar.innerHTML = '💳 Pagar a ' + e.nombre.split(' ')[0];
     btnPagar.onmouseover = function(){ this.style.opacity='.85'; };
     btnPagar.onmouseout  = function(){ this.style.opacity='1'; };
+    // Use data attribute + window function for max reliability
+    btnPagar.dataset.empNombre = e.nombre;
     btnPagar.onclick = function(ev){
       ev.stopPropagation();
-      abrirModalPagarEmp(e.nombre);
+      var nm = this.dataset.empNombre;
+      if (typeof _abrirModalEmpleadoDetalle === 'function') {
+        _abrirModalEmpleadoDetalle(nm);
+      } else if (typeof abrirModalPagarEmp === 'function') {
+        abrirModalPagarEmp(nm);
+      }
     };
 
     card.appendChild(infoDiv);
@@ -7505,7 +7525,15 @@ function _abrirModalEmpleadoDetalle(nombre) {
       </tr>`).join('');
   }
 
-  openModal('modal-emp-detalle');
+  // Abrir modal de pago - método ultra robusto
+  var _m = document.getElementById('modal-emp-detalle');
+  if (_m) {
+    _m.style.cssText = 'display:flex!important;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);';
+  } else {
+    // Si no existe el modal, crearlo dinámicamente
+    console.error('[MOTO] modal-emp-detalle no encontrado');
+    alert('Error: Modal no encontrado. Por favor recarga la página.');
+  }
 }
 
 function meempActualizarPago() {
@@ -8003,7 +8031,7 @@ function mpRegistrar() {
   saveState();
 
   var modal = document.getElementById('modal-emp-detalle');
-  if (modal) modal.classList.remove('open');
+  if (modal) modal.style.cssText = 'display:none';
 
   toast('✅ Pago de $'+fmt(val)+' registrado para '+_pagoNombre,'success');
   rgtRenderBotones();
@@ -8384,9 +8412,7 @@ setInterval(function() {
   } catch(e) {}
 }, 120000);
 
-</script>
-
-<!-- MODAL EDITAR MANO DE OBRA -->
+</script>RA -->
 <div class="modal-overlay" id="modal-editar-mo" style="display:none">
   <div class="modal" style="max-width:500px">
     <div class="modal-head">
