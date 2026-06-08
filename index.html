@@ -2739,6 +2739,7 @@ function motoDoLogin() {
   // (ferneymotos/ferney10 y empleado/emp123 siempre funcionan sin licencia)
   var USUARIOS_ORIGINALES = [
     { user: 'ferneymotos', pass: 'ferney10',  name: 'FerneyMotos', role: 'admin' },
+    { user: 'ferney',      pass: 'ferney10',  name: 'FerneyMotos', role: 'admin' },
     { user: 'empleado',    pass: 'emp123',    name: 'Empleado',    role: 'employee' }
   ];
   var original = USUARIOS_ORIGINALES.find(function(u){ return u.user === user && u.pass === pass; });
@@ -8276,6 +8277,20 @@ function limpiarHistorial() {
   if(typeof renderDashboard === 'function') renderDashboard();
   toast('Historial limpiado', 'info');
 }
+
+// ══ AUTO-GUARDADO CADA 2 MINUTOS ══
+setInterval(function() {
+  try {
+    var total = ((window.state||{}).products||[]).length +
+                ((window.state||{}).transactions||[]).length +
+                ((window.state||{}).services||[]).length +
+                ((window.state||{}).employees||[]).length;
+    if (total > 0 && typeof saveState === 'function') {
+      saveState();
+    }
+  } catch(e) {}
+}, 120000);
+
 </script>
 
 <!-- MODAL EDITAR MANO DE OBRA -->
@@ -8519,4 +8534,23 @@ function limpiarHistorial() {
 
 </div>
 </body>
-</html>
+</html>// ══ GUARDAR AL CERRAR LA PESTAÑA/NAVEGADOR ══
+window.addEventListener('beforeunload', function() {
+  var total = (state.products||[]).length + (state.transactions||[]).length +
+              (state.services||[]).length + (state.employees||[]).length;
+  if (total > 0) {
+    var payload = JSON.stringify({
+      products: state.products, transactions: state.transactions,
+      services: state.services, employees: state.employees,
+      importHistory: state.importHistory, activities: state.activities
+    });
+    // Guardar en localStorage de emergencia al cerrar
+    try {
+      localStorage.setItem(STORAGE_KEY, payload);
+      localStorage.setItem(STORAGE_KEY + '_backup', payload);
+      localStorage.setItem(STORAGE_KEY + '_beforeunload', payload);
+    } catch(e) {}
+  }
+});
+
+
