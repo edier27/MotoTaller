@@ -5925,6 +5925,99 @@ ${(d.repuestos&&d.repuestos.length&&d.manoObra>0)?`<span style="display:block">$
   w.document.close();
 }
 
+
+// ══════════════════════════════════════════════════════
+// FUNCIONES FALTANTES — CORREGIDAS
+// ══════════════════════════════════════════════════════
+
+// irCrearCuenta — abre el tab de crear cuenta en la pantalla de login
+function irCrearCuenta() {
+  if (typeof motoShowTab === 'function') {
+    motoShowTab('register');
+  } else {
+    var regPanel = document.getElementById('lic-panel-register');
+    var logPanel = document.getElementById('lic-panel-login');
+    var tabReg   = document.getElementById('tab-register');
+    var tabLog   = document.getElementById('tab-login');
+    if (regPanel) regPanel.style.display = 'block';
+    if (logPanel) logPanel.style.display = 'none';
+    if (tabReg)   tabReg.classList.add('active');
+    if (tabLog)   tabLog.classList.remove('active');
+  }
+}
+
+// printClientHistory — imprime el historial de un cliente
+function printClientHistory(nombre) {
+  var acts = (state.activities||[]).filter(function(a) {
+    return String(a.cliente||'').toLowerCase().includes(String(nombre||'').toLowerCase());
+  });
+  var txs = (state.transactions||[]).filter(function(t) {
+    return String(t.cliente||'').toLowerCase().includes(String(nombre||'').toLowerCase());
+  });
+  var all = [...acts, ...txs].sort(function(a,b){ return new Date(b.fecha) - new Date(a.fecha); });
+  
+  var html = '<html><head><title>Historial: ' + nombre + '</title>'
+    + '<style>body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}'
+    + 'th,td{border:1px solid #ddd;padding:8px;font-size:12px}th{background:#f5f5f5}h2{color:#E87A00}'
+    + '@media print{button{display:none}}</style></head><body>'
+    + '<h2>Historial de ' + nombre + '</h2>'
+    + '<p>Total registros: ' + all.length + '</p>'
+    + '<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Moto</th><th>Valor</th></tr></thead><tbody>';
+  
+  if (!all.length) {
+    html += '<tr><td colspan="5" style="text-align:center;color:#999">Sin registros</td></tr>';
+  } else {
+    all.forEach(function(item) {
+      var fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-CO') : '-';
+      var tipo  = item.tipo || item.esManoObra ? 'Servicio' : 'Otro';
+      var desc  = item.desc || item.detalle || '-';
+      var moto  = item.moto || '-';
+      var valor = '$' + (item.valor || item.manoObra || 0).toLocaleString('es-CO');
+      html += '<tr><td>' + fecha + '</td><td>' + tipo + '</td><td>' + desc + '</td><td>' + moto + '</td><td>' + valor + '</td></tr>';
+    });
+  }
+  html += '</tbody></table><br><button onclick="window.print()">🖨️ Imprimir</button></body></html>';
+  
+  var w = window.open('', '_blank', 'width=800,height=600');
+  if (w) { w.document.write(html); w.document.close(); }
+}
+
+// quickViewEmp — abre el modal de detalle del empleado
+function quickViewEmp(nombre) {
+  if (typeof abrirModalEmpleado === 'function') {
+    abrirModalEmpleado(nombre);
+  } else if (typeof _abrirModalEmpleadoDetalle === 'function') {
+    _abrirModalEmpleadoDetalle(nombre);
+  } else {
+    // Fallback: ir a la vista de empleados
+    if (typeof showEmpMain === 'function') showEmpMain();
+  }
+}
+
+// colombiaDateMoto — si no está definida como función global
+if (typeof colombiaDateMoto !== 'function') {
+  window.colombiaDateMoto = function() {
+    var n = new Date();
+    return new Date(n.getTime() - (5 * 60 * 60 * 1000));
+  };
+}
+
+// today — función global que retorna fecha YYYY-MM-DD
+// (puede estar definida como variable local en funciones, pero necesitamos la global)
+function today() {
+  var d = (typeof colombiaDateMoto === 'function') ? colombiaDateMoto() : new Date();
+  return d.getFullYear() + '-'
+    + String(d.getMonth() + 1).padStart(2, '0') + '-'
+    + String(d.getDate()).padStart(2, '0');
+}
+
+// Alias para compatibilidad
+if (typeof window !== 'undefined') {
+  window.irCrearCuenta       = irCrearCuenta;
+  window.printClientHistory  = printClientHistory;
+  window.quickViewEmp        = quickViewEmp;
+  window.today               = today;
+}
 </script>
 
 
