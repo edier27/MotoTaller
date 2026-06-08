@@ -2496,13 +2496,23 @@ function loadFromFirebase() {
       try {
         const saved = JSON.parse(doc.data().appData);
         // Protección: no aplicar si Firebase tiene menos datos
-        if ((saved.products||[]).length < state.products.length) {
-          console.warn('[MOTO] Firebase tiene menos productos — ignorado');
-          return;
-        }
-        if ((saved.transactions||[]).length < state.transactions.length) {
-          console.warn('[MOTO] Firebase tiene menos transacciones — ignorado');
-          return;
+        // ── Permitir borrados intencionales ──────────────────────────────
+        // Si Firebase tiene _lastModified más reciente → el usuario borró
+        // algo desde otro dispositivo o mismo dispositivo. Aceptar.
+        var fbLastMod = saved._lastModified || 0;
+        var localLastMod = state._lastModified || 0;
+        
+        var fbMenosProductos = (saved.products||[]).length < state.products.length;
+        var fbMenosTrans = (saved.transactions||[]).length < state.transactions.length;
+        
+        if (fbMenosProductos || fbMenosTrans) {
+          // Solo ignorar si el dato local es MÁS RECIENTE que Firebase
+          // Si Firebase es más reciente → el usuario borró intencionalmente
+          if (localLastMod > fbLastMod) {
+            console.warn('[MOTO] Firebase tiene menos datos pero local es más reciente — ignorando Firebase');
+            return;
+          }
+          console.log('[MOTO] Firebase más reciente — aplicando borrado intencional');
         }
         state.products      = (saved.products||[]).map(function(p,i){ if(!p.id) p.id='P_'+i; return p; });
         state.transactions  = saved.transactions  || [];
@@ -2518,6 +2528,14 @@ function loadFromFirebase() {
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof renderProducts === 'function') renderProducts();
         if (typeof renderTransactions === 'function') renderTransactions();
+        // ✅ CORREGIDO: Actualizar módulo de empleados
+        if (typeof renderEmployees === 'function') renderEmployees();
+        if (typeof rgtPoblarEmpleados === 'function') rgtPoblarEmpleados();
+        if (typeof rgtRenderBotones === 'function') rgtRenderBotones();
+        if (typeof rgtRenderLista === 'function') rgtRenderLista();
+        if (typeof rgtRenderResumen === 'function') rgtRenderResumen();
+        if (typeof renderCfgEmpList === 'function') renderCfgEmpList();
+        if (typeof poblarSelectEmpleados === 'function') poblarSelectEmpleados();
         console.log('[MOTO] ✅ Datos cargados desde Firebase:', 
           state.products.length, 'productos,',
           state.transactions.length, 'transacciones');
@@ -2526,6 +2544,14 @@ function loadFromFirebase() {
   }, function(e) { console.warn('Error listener Firebase moto:', e); });
 }
 
+
+// ══ MARCAR BORRADO INTENCIONAL ══════════════════════════
+// Incrementa versión y timestamp para que Firebase sepa
+// que este borrado fue hecho a propósito por el usuario
+function marcarBorradoIntencional() {
+  state._deleteVersion = (state._deleteVersion || 0) + 1;
+  state._lastModified  = Date.now();
+}
 function saveState() {
   try {
     // ══ PROTECCIÓN 1: NUNCA guardar base vacía en Firebase ════════════════
@@ -2543,6 +2569,8 @@ function saveState() {
       employees:     state.employees,
       importHistory: state.importHistory,
       activities:    state.activities,
+      _deleteVersion: (state._deleteVersion || 0), // versión de borrados
+      _lastModified:  Date.now(),                  // timestamp del último cambio
     };
     const payload = JSON.stringify(data);
     // ══ PROTECCIÓN 2: Guardar siempre en localStorage primero ════════════
@@ -3989,6 +4017,7 @@ function deleteProduct(id) {
   state.products = state.products.filter(function(p) {
     return p.id !== id && p.codigo !== id;
   });
+  marcarBorradoIntencional(); // ← Marca borrado intencional
   if(state.products.length === antes) {
     toast('Producto no encontrado', 'error'); return;
   }
@@ -4524,6 +4553,8 @@ let selectedEmpForActivity = null;
 function showEmpMain() {
   const v = document.getElementById('emp-main-view');
   if(v) v.style.display = 'block';
+  // ✅ Poblar selects ANTES de renderizar
+  if(typeof rgtPoblarEmpleados === 'function') rgtPoblarEmpleados();
   renderEmployees();
 }
 function showEmpSettings() { goPage('configuracion'); } // redirect
@@ -4801,6 +4832,7 @@ function saveActivity() { /* reemplazada al final del script */ }
 
 function deleteActivity(id) {
   state.activities = state.activities.filter(a=>a.id!==id);
+  marcarBorradoIntencional();
   renderActivitiesAdmin(); renderEmpButtons();
   toast('Actividad eliminada','info');
 }
@@ -4932,12 +4964,8 @@ function saveEmployee() {
   toast('Empleado creado: '+nombre,'success');
 }
 
-function deleteEmployee(id) {
-  if(!confirm('¿Eliminar este empleado?')) return;
-  state.employees = state.employees.filter(e=>e.id!==id);
-  renderEmployees(); populateActSelects(); renderHistEmpSelector();
-  toast('Empleado eliminado','info');
-}
+// [deleteEmployee duplicado removido]
+
 
 // ─── UTILS ───────────────────────────────────────
 function fmt(n){ return Number(n).toLocaleString('es-CO'); }
@@ -6339,14 +6367,8 @@ function imprimirReporteMensual() {
   const mes     = now.getMonth();
   const mesStr  = now.toLocaleDateString('es-CO',{month:'long',year:'numeric'});
 
-  function parseFecha(str){
-    if(!str) return null;
-    const m=String(str).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if(m) return new Date(parseInt(m[3]),parseInt(m[2])-1,parseInt(m[1]));
-    const d=new Date(str); return isNaN(d)?null:d;
-  }
-
-  const txsMes   = state.transactions.filter(t=>{ const d=parseFecha(t.fecha); return d&&d.getFullYear()===anio&&d.getMonth()===mes; });
+  // [parseFecha removido - definida en script principal]
+const txsMes   = state.transactions.filter(t=>{ const d=parseFecha(t.fecha); return d&&d.getFullYear()===anio&&d.getMonth()===mes; });
   const servsMes = state.services.filter(s=>{ const d=parseFecha(s.fecha); return d&&d.getFullYear()===anio&&d.getMonth()===mes; });
   const totalVentas = txsMes.reduce((s,t)=>s+t.total,0);
   const totalServs  = servsMes.reduce((s,sv)=>s+(parseInt(sv.valor)||0),0);
@@ -6521,25 +6543,12 @@ function renderEmpStats() {
       colombiaDateMoto().toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}));
 }
 
-function empTab(tab) { renderEmpStats(); }
+// [empTab removido - definida en script principal]
+// [renderEmpDia duplicado interno removido]
 
-function renderEmpDia() { renderEmpStats(); }
 
-function abrirModalPagar() {
-  const d = _calcGananciaEmpleado();
+// [abrirModalPagar duplicado interno removido]
 
-  // Rellenar modal
-  const mg  = document.getElementById('modal-ganancia-total');
-  const mgd = document.getElementById('modal-ganancia-det');
-  const pv  = document.getElementById('pagar-valor');
-
-  if(mg)  mg.textContent  = '$' + fmt(d.pendiente);
-  if(mgd) mgd.textContent = '70% de $' + fmt(d.manoObra) + ' · Ya cobrado: $' + fmt(d.yaPagado);
-  if(pv)  pv.value        = d.pendiente;
-
-  actualizarModalPago();
-  openModal('modal-pagar-emp');
-}
 
 function actualizarModalPago() {
   const d    = _calcGananciaEmpleado();
@@ -6560,42 +6569,11 @@ function actualizarModalPago() {
   if(mp) mp.style.color = pend === 0 ? '#27ae60' : 'var(--accent)';
 }
 
-function registrarPago() {
-  const val  = parseInt(document.getElementById('pagar-valor')?.value) || 0;
-  const name = currentUser ? currentUser.name : '';
-  if(!val || val <= 0) { toast('Ingresa un valor válido', 'error'); return; }
+// [registrarPago duplicado interno removido]
 
-  const d = _calcGananciaEmpleado();
-  if(val > d.pendiente) {
-    toast('El valor supera la ganancia pendiente ($' + fmt(d.pendiente) + ')', 'error');
-    return;
-  }
 
-  // Registrar el pago
-  state.transactions.push({
-    id:       'PAGO' + Date.now(),
-    fecha:    new Date().toISOString(),
-    tipo:     'Pago Empleado',
-    empleado: name,
-    cliente:  name,
-    moto:     '—',
-    detalle:  'Cobro de ganancia del día — 70% mano de obra',
-    total:    val,
-    esPago:   true
-  });
-  saveState();
+// [imprimirReciboPago duplicado interno removido]
 
-  imprimirComprobantePago(val, name);
-  closeModal('modal-pagar-emp');
-  renderEmpStats();
-  toast('✓ Pago registrado: $' + fmt(val), 'success');
-}
-
-function imprimirReciboPago() {
-  const val  = parseInt(document.getElementById('pagar-valor')?.value) || 0;
-  const name = currentUser ? currentUser.name : '';
-  imprimirComprobantePago(val, name);
-}
 
 function imprimirComprobantePago(val, nombre) {
   const d    = _calcGananciaEmpleado();
@@ -6660,25 +6638,20 @@ function imprimirComprobantePago(val, nombre) {
   w.document.open(); w.document.write(html); w.document.close(); w.focus();
 }
 
-// Compatibilidad con funciones que ya no se usan
-function renderEmpProducts(){}
-function empSaveService(){}
-function empQuickService(){}
-function empScanBarcode(){}
-function filterEmpProducts(){}
-function empFinalizeSale(){}
-function renderEmpResumen(){ renderEmpStats(); }
-function imprimirRegistroEmp(){}
-function actualizarGananciaModal(){ actualizarModalPago(); }
+// [renderEmpProducts removido - definida en script principal]
+// [empScanBarcode removido - definida en script principal]
+// [renderEmpResumen removido - definida en script principal]
+// [imprimirRegistroEmp duplicado interno removido]
+
+// [actualizarGananciaModal duplicado interno removido]
+
 function imprimirReciboPago2(){}
 
 // ══════════════════════════════════════════════════════
 
 
-function empTab(tab) {
-  // Solo existe un tab ahora — compatibilidad
-  renderEmpStats();
-}
+// [empTab removido - definido en script principal]
+
 
 function renderEmpDia() {
   const name = currentUser ? currentUser.name : '';
@@ -6900,14 +6873,7 @@ function imprimirRegistroEmp(id, src) {
   }
 }
 
-// Compatibilidad con funciones antiguas que ya no se necesitan
-function renderEmpResumen(){ renderEmpDia(); }
-function renderEmpProducts(){ }
-function empSaveService(){ }
-function empQuickService(){ }
-function empScanBarcode(){ }
-function filterEmpProducts(){ }
-function empFinalizeSale(){ }
+// [Stubs de compatibilidad removidos - funciones definidas en script principal]
 
 // ══════════════════════════════════════════════════════
 // MANO DE OBRA — REGISTRO ADMIN → VISIBLE EN EMPLEADO
@@ -7120,15 +7086,8 @@ function renderManoObra() {
     </tr>`).join('');
 }
 
-function eliminarManoObra(id) {
-  if(!confirm('¿Eliminar este registro de mano de obra?')) return;
-  state.activities = (state.activities||[]).filter(a=>a.id!==id);
-  saveState();
-  const list = _getManoObras().filter(m=>m.id!==id);
-  _saveManoObras(list);
-  renderManoObra();
-  toast('Registro eliminado','info');
-}
+// [eliminarManoObra duplicado interno removido]
+
 
 // ══════════════════════════════════════════════════════
 // SINCRONIZACIÓN ENTRE PESTAÑAS (Admin ↔ Empleado)
@@ -7276,25 +7235,11 @@ function rgtRenderBotones() {
   const grid = document.getElementById('emp-buttons-grid');
   if(!grid) return;
 
-  // Leer del localStorage para datos frescos
-  let employees=[], acts=[], txs=[];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const d = JSON.parse(raw);
-      employees = d.employees   || [];
-      acts      = d.activities  || [];
-      txs       = d.transactions|| [];
-      if(employees.length) state.employees   = employees;
-      state.activities   = acts;
-      state.transactions = txs;
-    }
-  } catch(e){}
-  if(!employees.length) employees = state.employees||[];
-  if(!acts.length)      acts      = state.activities||[];
-  if(!txs.length)       txs       = state.transactions||[];
-
-  const hoy = today();
+  // ✅ Usar state directamente — siempre actualizado
+  const employees = state.employees  || [];
+  const acts      = state.activities || [];
+  const txs       = state.transactions || [];
+  const hoy       = today();
 
   if(!employees.length){
     grid.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:10px">Sin empleados. Ve a Configuración para agregar.</div>';
@@ -7366,8 +7311,6 @@ function rgtRenderBotones() {
     grid.appendChild(card);
   });
 }
-
-// ── MODAL PAGAR EMPLEADO (desde tarjeta) ──────────
 
 function rgtFiltrarEmp(nombre) {
   // Filtrar tabla
@@ -7774,10 +7717,14 @@ function rgtEliminar(id) {
 }
 
 // Compatibilidad con funciones antiguas
-function switchEmpTab(){}
-function guardarManoObra(){ rgtGuardar(); }
-function renderManoObra(){ rgtRenderLista(); rgtRenderResumen(); }
-function poblarSelectEmpleados(){ rgtPoblarEmpleados(); }
+// [switchEmpTab duplicado interno removido]
+
+// [guardarManoObra duplicado interno removido]
+
+// [renderManoObra duplicado interno removido]
+
+// [poblarSelectEmpleados duplicado interno removido]
+
 // renderEmpButtons alias removed - using main function
 
 // ── PAGO AL EMPLEADO (desde tarjeta) ──
