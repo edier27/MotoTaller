@@ -24,6 +24,10 @@
       var __motoDB = _motoApp.firestore().collection("mototaller").doc("main");
       window.__motoDB = __motoDB;
       window.__motoFirebaseOK = true;
+      // Persistencia offline — guarda en IndexedDB del navegador
+      _motoApp.firestore().enablePersistence({synchronizeTabs:true})
+        .then(function(){ console.log('[MOTO] ✅ Persistencia offline activada'); })
+        .catch(function(e){ console.warn('[MOTO] Persistencia offline no disponible:', e.code); });
     } catch(e) {
       window.__motoFirebaseOK = false;
       window.__motoDB = null;
@@ -2407,15 +2411,12 @@ var _motoLastSaveTs = 0;
 // ── LIMPIEZA ÚNICA: borra datos de demo guardados en el navegador ──
 // Esto corre una sola vez. Preserva las credenciales del admin.
 (function limpiarDatosDemo() {
+  // ✅ DESACTIVADA — Esta función borraba datos reales de usuarios
+  // Se conserva la función pero sin efecto para no romper el código
   try {
     const FLAG = 'mototaller_limpiado_v3';
-    if (!localStorage.getItem(FLAG)) {
-      const adminCreds = localStorage.getItem('mototaller_admin_creds');
-      localStorage.removeItem(STORAGE_KEY);
-      // Restaurar credenciales si existían
-      if (adminCreds) localStorage.setItem('mototaller_admin_creds', adminCreds);
-      localStorage.setItem(FLAG, '1');
-    }
+    localStorage.setItem(FLAG, '1'); // Marcar como ejecutada sin borrar nada
+    console.log('[MOTO] limpiarDatosDemo: desactivada, datos protegidos');
   } catch(e) {}
 })();
 
@@ -2425,7 +2426,8 @@ const DEFAULT_EMPLOYEES = [];
 function loadState() {
   // Carga inicial desde localStorage (sincrónica)
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    // Intentar clave principal, luego backup si la principal está vacía
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY + '_backup');
     if (raw) {
       const saved = JSON.parse(raw);
       return {
@@ -2463,6 +2465,7 @@ function loadFromFirebase() {
   // Si hay datos locales → protegerlos con timestamp actual
   // Si NO hay datos locales (caché borrado) → permitir que Firebase cargue (ts=0)
   _motoLastSaveTs = hayDatosLocales ? Date.now() : 0;
+  console.log('[MOTO] loadFromFirebase — hayDatosLocales:', hayDatosLocales, '| productos:', state.products.length, '| servicios:', state.services.length);
 
   console.log('[MOTO] loadFromFirebase — datos locales:', hayDatosLocales, '— ts:', _motoLastSaveTs);
 
@@ -2482,8 +2485,12 @@ function loadFromFirebase() {
     }
     // Si NO hay datos locales → siempre cargar de Firebase
     if (!hayDatosLocales && !doc.exists) {
-      console.log('[MOTO] Firebase vacío y sin datos locales');
+      console.log('[MOTO] Firebase vacío y sin datos locales — base limpia');
       return;
+    }
+    // Sin datos locales Y Firebase tiene datos → RESTAURAR SIEMPRE
+    if (!hayDatosLocales && doc.exists && doc.data().appData) {
+      console.log('[MOTO] 🔄 Sin datos locales — restaurando desde Firebase...');
     }
     if (doc.exists && doc.data().appData) {
       try {
@@ -2521,6 +2528,14 @@ function loadFromFirebase() {
 
 function saveState() {
   try {
+    // ══ PROTECCIÓN 1: NUNCA guardar base vacía en Firebase ════════════════
+    var totalRegistros = (state.products||[]).length + (state.transactions||[]).length +
+                         (state.services||[]).length + (state.employees||[]).length;
+    if (totalRegistros === 0) {
+      console.warn('[MOTO] ⚠️ Guardado bloqueado — base de datos vacía. Firebase protegido.');
+      return;
+    }
+
     const data = {
       products:      state.products,
       transactions:  state.transactions,
@@ -2530,6 +2545,8 @@ function saveState() {
       activities:    state.activities,
     };
     const payload = JSON.stringify(data);
+    // ══ PROTECCIÓN 2: Guardar siempre en localStorage primero ════════════
+    try { localStorage.setItem(STORAGE_KEY, payload); } catch(e) {}
     _motoLastSaveTs = Date.now();
 
     // ══ FIREBASE PRIMERO — caché nunca se llena ═══════════════════════════════
@@ -2542,12 +2559,15 @@ function saveState() {
       }).then(function(){
         // Firebase OK → solo guardar timestamp, borrar datos del caché
         try {
-          localStorage.removeItem(STORAGE_KEY);
+          // Guardar copia de respaldo antes de limpiar caché principal
+          localStorage.setItem(STORAGE_KEY + '_backup', localStorage.getItem(STORAGE_KEY)||'');
           localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
           localStorage.setItem('moto_sid_v1', _motoSessionId);
           localStorage.removeItem('moto_pending_sync');
+          // Solo limpiar caché principal si Firebase confirmó el guardado
+          localStorage.removeItem(STORAGE_KEY);
         } catch(e2) {}
-        console.log('[MOTO] ✅ Firebase guardado — caché liberado');
+        console.log('[MOTO] ✅ Firebase guardado — respaldo en backup key');
       }).catch(function(e) {
         // Firebase falló → guardar en localStorage como emergencia
         try {
