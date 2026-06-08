@@ -6075,65 +6075,83 @@ if (typeof window !== 'undefined') {
 
 <!-- MODAL PAGO EMPLEADO — SIMPLE Y FUNCIONAL -->
 <div class="modal-overlay" id="modal-emp-detalle">
-  <div class="modal" style="max-width:480px;width:96vw">
-    <div class="modal-head" style="background:linear-gradient(90deg,#1e2435,#2c3e6b)">
-      <div class="modal-title" style="color:#fff;font-size:17px">
-        💳 Pagar a: <span id="memp-nombre" style="color:#00e5ff">—</span>
+  <div class="modal" style="max-width:500px;width:96vw;border-radius:16px;overflow:hidden;">
+
+    <!-- Header -->
+    <div class="modal-head" style="background:linear-gradient(135deg,#1e2435,#2c3e6b);padding:18px 20px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;" id="memp-avatar">F</div>
+        <div>
+          <div style="color:#fff;font-size:17px;font-weight:800;" id="memp-nombre">—</div>
+          <div style="color:rgba(255,255,255,0.6);font-size:12px;">Resumen del día</div>
+        </div>
       </div>
-      <button class="modal-close" style="color:#fff;font-size:24px;background:none;border:none;cursor:pointer"
+      <button style="color:#fff;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;"
         onclick="document.getElementById('modal-emp-detalle').classList.remove('open')">×</button>
     </div>
-    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:16px">
 
-      <!-- Stats -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
-        <div style="background:var(--bg3);border-radius:10px;padding:12px">
-          <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;margin-bottom:4px">Mano de Obra</div>
-          <div style="font-size:18px;font-weight:800" id="memp-mo">$0</div>
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Stats del día -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;">
+          <div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Mano de Obra</div>
+          <div style="font-size:17px;font-weight:800;color:#1e293b;" id="memp-mo">$0</div>
         </div>
-        <div style="background:var(--accent-dim);border:2px solid var(--accent);border-radius:10px;padding:12px">
-          <div style="font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:4px">Ganancia 70%</div>
-          <div style="font-size:18px;font-weight:800;color:var(--accent)" id="memp-ganancia">$0</div>
+        <div style="background:#fff7ed;border:2px solid var(--accent);border-radius:12px;padding:14px;">
+          <div style="font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ganancia 70%</div>
+          <div style="font-size:17px;font-weight:800;color:var(--accent);" id="memp-ganancia">$0</div>
         </div>
-        <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:12px">
-          <div style="font-size:10px;color:#166534;font-weight:700;text-transform:uppercase;margin-bottom:4px">Por Cobrar</div>
-          <div style="font-size:18px;font-weight:800;color:#166534" id="memp-pendiente">$0</div>
+        <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:14px;">
+          <div style="font-size:10px;color:#166534;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Por Pagar</div>
+          <div style="font-size:17px;font-weight:800;color:#166534;" id="memp-pendiente">$0</div>
         </div>
       </div>
 
-      <!-- Ya cobrado -->
-      <div style="font-size:12px;color:var(--text2);text-align:center">
-        Ya cobrado hoy: <strong id="memp-yapagado" style="color:#e74c3c">$0</strong>
+      <!-- Ya pagado hoy -->
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:#991b1b;font-weight:600;">Ya pagado hoy:</span>
+        <strong style="font-size:15px;color:#dc2626;" id="memp-yapagado">$0</strong>
       </div>
 
       <!-- Trabajos del día -->
       <div>
-        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Trabajos del día</div>
-        <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:160px;overflow-y:auto">
-          <table style="width:100%">
-            <thead><tr><th style="font-size:10px">Hora</th><th style="font-size:10px">Cliente</th><th style="font-size:10px">Trabajo</th><th style="font-size:10px;text-align:right">M.Obra</th></tr></thead>
-            <tbody id="memp-trabajos"></tbody>
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">📋 Trabajos registrados hoy</div>
+        <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;max-height:180px;overflow-y:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Hora</th>
+                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Cliente</th>
+                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Descripción</th>
+                <th style="padding:8px 10px;text-align:right;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">M.Obra</th>
+              </tr>
+            </thead>
+            <tbody id="memp-trabajos">
+              <tr><td colspan="4" style="text-align:center;padding:16px;color:#94a3b8;">Sin trabajos hoy</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Campo de pago -->
-      <div style="background:var(--bg3);border-radius:12px;padding:16px;border:2px solid var(--accent)">
-        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">💰 Ingresa el valor a pagar</div>
+      <!-- Input pago -->
+      <div style="background:#fff7ed;border:2px solid var(--accent);border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">💰 Registrar pago</div>
         <input type="number" id="memp-pagar-val" min="0" placeholder="0"
           oninput="mpActualizar()"
-          style="width:100%;background:var(--bg2);border:2px solid var(--accent);border-radius:8px;padding:12px 14px;color:var(--text);font-size:24px;font-weight:800;outline:none;font-family:'Rajdhani',sans-serif;text-align:center">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-          <span style="font-size:12px;color:var(--text2)">Saldo después del pago:</span>
-          <span id="memp-saldo-rest" style="font-size:16px;font-weight:800;color:#27ae60">$0</span>
+          style="width:100%;background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;color:#1e293b;font-size:22px;font-weight:800;outline:none;text-align:center;box-sizing:border-box;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+          <span style="font-size:12px;color:#64748b;">Saldo después del pago:</span>
+          <strong style="font-size:16px;color:var(--accent);" id="memp-saldo-rest">$0</strong>
         </div>
       </div>
 
     </div>
-    <div class="modal-footer" style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn btn-secondary"
-        onclick="document.getElementById('modal-emp-detalle').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" onclick="mpRegistrar()" style="font-weight:700;font-size:15px;padding:11px 32px">
+
+    <!-- Footer botones -->
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-emp-detalle').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="mpRegistrar()" style="font-weight:700;font-size:15px;padding:11px 28px;">
         ✓ Registrar Pago
       </button>
     </div>
@@ -7848,13 +7866,10 @@ var _pagoPendiente = 0;
 function abrirModalPagarEmp(nombre) {
   _pagoNombre = nombre;
 
-  var raw = localStorage.getItem(STORAGE_KEY);
-  var data = {};
-  try { data = JSON.parse(raw||'{}'); } catch(e) {}
-  var acts = data.activities   || state.activities   || [];
-  var txs  = data.transactions || state.transactions || [];
-  var emps = data.employees    || state.employees    || [];
-  state.activities = acts; state.transactions = txs; state.employees = emps;
+  // ✅ CORREGIDO: usar state directamente (Firebase actualiza state)
+  var acts = state.activities   || [];
+  var txs  = state.transactions || [];
+  var emps = state.employees    || [];
 
   var empObj = emps.find(function(e){ return e.nombre === nombre; });
   var empUser = empObj ? String(empObj.usuario||'').toLowerCase() : '';
@@ -7883,6 +7898,9 @@ function abrirModalPagarEmp(nombre) {
 
   function setTxt(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
   setTxt('memp-nombre',    nombre);
+  // Actualizar avatar con la inicial del nombre
+  var avatarEl = document.getElementById('memp-avatar');
+  if (avatarEl) avatarEl.textContent = (nombre||'?')[0].toUpperCase();
   setTxt('memp-mo',        '$'+fmt(mo));
   setTxt('memp-ganancia',  '$'+fmt(gan));
   setTxt('memp-yapagado',  '$'+fmt(yaPagado));
@@ -7953,10 +7971,11 @@ function mpRegistrar() {
   var modal = document.getElementById('modal-emp-detalle');
   if (modal) modal.classList.remove('open');
 
-  toast('Pago de $'+fmt(val)+' registrado para '+_pagoNombre,'success');
+  toast('✅ Pago de $'+fmt(val)+' registrado para '+_pagoNombre,'success');
   rgtRenderBotones();
   rgtRenderResumen();
   if (typeof renderDashboard === 'function') renderDashboard();
+  if (typeof updateDashboard === 'function') updateDashboard();
 }
 
 // ══════════════════════════════════════════════
