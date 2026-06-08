@@ -2380,6 +2380,92 @@ body.light-mode .mobile-nav-item.active {
       </div>
     </div>
   </div>
+
+
+<!-- MODAL PAGO EMPLEADO — SIMPLE Y FUNCIONAL -->
+<div class="modal-overlay" id="modal-emp-detalle">
+  <div class="modal" style="max-width:500px;width:96vw;border-radius:16px;overflow:hidden;">
+
+    <!-- Header -->
+    <div class="modal-head" style="background:linear-gradient(135deg,#1e2435,#2c3e6b);padding:18px 20px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;" id="memp-avatar">F</div>
+        <div>
+          <div style="color:#fff;font-size:17px;font-weight:800;" id="memp-nombre">—</div>
+          <div style="color:rgba(255,255,255,0.6);font-size:12px;">Resumen del día</div>
+        </div>
+      </div>
+      <button style="color:#fff;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;"
+        onclick="var m=document.getElementById('modal-emp-detalle');if(m){m.classList.remove('open');m.style.display=''}">×</button>
+    </div>
+
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Stats del día -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;">
+          <div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Mano de Obra</div>
+          <div style="font-size:17px;font-weight:800;color:#1e293b;" id="memp-mo">$0</div>
+        </div>
+        <div style="background:#fff7ed;border:2px solid var(--accent);border-radius:12px;padding:14px;">
+          <div style="font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ganancia 70%</div>
+          <div style="font-size:17px;font-weight:800;color:var(--accent);" id="memp-ganancia">$0</div>
+        </div>
+        <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:14px;">
+          <div style="font-size:10px;color:#166534;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Por Pagar</div>
+          <div style="font-size:17px;font-weight:800;color:#166534;" id="memp-pendiente">$0</div>
+        </div>
+      </div>
+
+      <!-- Ya pagado hoy -->
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:#991b1b;font-weight:600;">Ya pagado hoy:</span>
+        <strong style="font-size:15px;color:#dc2626;" id="memp-yapagado">$0</strong>
+      </div>
+
+      <!-- Trabajos del día -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">📋 Trabajos registrados hoy</div>
+        <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;max-height:180px;overflow-y:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Hora</th>
+                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Cliente</th>
+                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Descripción</th>
+                <th style="padding:8px 10px;text-align:right;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">M.Obra</th>
+              </tr>
+            </thead>
+            <tbody id="memp-trabajos">
+              <tr><td colspan="4" style="text-align:center;padding:16px;color:#94a3b8;">Sin trabajos hoy</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Input pago -->
+      <div style="background:#fff7ed;border:2px solid var(--accent);border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">💰 Registrar pago</div>
+        <input type="number" id="memp-pagar-val" min="0" placeholder="0"
+          oninput="mpActualizar()"
+          style="width:100%;background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;color:#1e293b;font-size:22px;font-weight:800;outline:none;text-align:center;box-sizing:border-box;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+          <span style="font-size:12px;color:#64748b;">Saldo después del pago:</span>
+          <strong style="font-size:16px;color:var(--accent);" id="memp-saldo-rest">$0</strong>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer botones -->
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="var m=document.getElementById('modal-emp-detalle');if(m){m.classList.remove('open');m.style.display=''}">Cancelar</button>
+      <button class="btn btn-primary" onclick="mpRegistrar()" style="font-weight:700;font-size:15px;padding:11px 28px;">
+        ✓ Registrar Pago
+      </button>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -2399,8 +2485,10 @@ var getMesColombia   = function() { return colombiaDateMoto().toISOString().slic
 const STORAGE_KEY = 'mototaller_v1';
 
 // ─── PROTECCIÓN DE DATOS ─────────────────────────────────
-var _motoSessionId = localStorage.getItem('moto_sid_v1');
-if(!_motoSessionId){ _motoSessionId = Math.random().toString(36).slice(2,10); localStorage.setItem('moto_sid_v1',_motoSessionId); }
+// ✅ SIEMPRE nuevo sessionId en cada carga de página
+// Así el savedBy funciona correctamente para sync multi-dispositivo
+var _motoSessionId = 'moto_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+// NO guardar en localStorage para que cada recarga sea sesión nueva
 var _motoLastSaveTs = 0;
 
 // ─── PROTECCIÓN DE DATOS ─────────────────────────────────
@@ -2469,29 +2557,36 @@ function loadFromFirebase() {
 
   console.log('[MOTO] loadFromFirebase — datos locales:', hayDatosLocales, '— ts:', _motoLastSaveTs);
 
+  var _startupLoad = true; // Flag para el primer disparo
   window.__motoDB.onSnapshot(function(doc) {
-    if (doc.exists && doc.data().savedBy === _motoSessionId) return;
     var fbTs = (doc.exists && doc.data().updatedAt) ? new Date(doc.data().updatedAt).getTime() : 0;
+
+    // ✅ CRÍTICO: En el startup, SIEMPRE cargar de Firebase si no hay datos locales
+    // El check savedBy solo aplica para actualizaciones en tiempo real (no startup)
+    if (!_startupLoad) {
+      // Después del startup: ignorar cambios del mismo dispositivo
+      if (doc.exists && doc.data().savedBy === _motoSessionId) return;
+    }
+    _startupLoad = false;
 
     // Si hay datos locales más recientes → subir a Firebase automáticamente
     if (hayDatosLocales && fbTs <= _motoLastSaveTs) {
-      // Siempre subir datos locales a Firebase al iniciar (no solo cuando está vacío)
       if (state.products.length > 0 || state.transactions.length > 0 ||
           state.services.length > 0 || state.employees.length > 0) {
-        console.log('[MOTO] ☁️ Subiendo datos locales a Firebase automáticamente...');
+        console.log('[MOTO] ☁️ Subiendo datos locales a Firebase...');
         saveState();
       }
       return;
     }
-    // Si NO hay datos locales → siempre cargar de Firebase
-    if (!hayDatosLocales && !doc.exists) {
+    // ✅ Si NO hay datos locales → siempre restaurar de Firebase sin importar timestamp
+    if (!hayDatosLocales && doc.exists && doc.data().appData) {
+      console.log('[MOTO] 🔄 Local vacío — restaurando TODOS los datos desde Firebase...');
+      // Continuar hacia el bloque de restauración abajo
+    } else if (!hayDatosLocales && !doc.exists) {
       console.log('[MOTO] Firebase vacío y sin datos locales — base limpia');
       return;
     }
-    // Sin datos locales Y Firebase tiene datos → RESTAURAR SIEMPRE
-    if (!hayDatosLocales && doc.exists && doc.data().appData) {
-      console.log('[MOTO] 🔄 Sin datos locales — restaurando desde Firebase...');
-    }
+// [Checks anteriores consolidados en el bloque de arriba]
     if (doc.exists && doc.data().appData) {
       try {
         const saved = JSON.parse(doc.data().appData);
@@ -2585,17 +2680,25 @@ function saveState() {
         updatedAt: new Date().toISOString(),
         savedBy: _motoSessionId
       }).then(function(){
-        // Firebase OK → solo guardar timestamp, borrar datos del caché
         try {
-          // Guardar copia de respaldo antes de limpiar caché principal
-          localStorage.setItem(STORAGE_KEY + '_backup', localStorage.getItem(STORAGE_KEY)||'');
+          var currentPayload = localStorage.getItem(STORAGE_KEY) || '';
+          // ✅ MANTENER localStorage por 60 segundos como red de seguridad
+          // NO borrarlo inmediatamente - en caso de recarga rápida
+          if (currentPayload) {
+            localStorage.setItem(STORAGE_KEY + '_backup', currentPayload);
+          }
           localStorage.setItem(STORAGE_KEY + '_ts', _motoLastSaveTs.toString());
-          localStorage.setItem('moto_sid_v1', _motoSessionId);
           localStorage.removeItem('moto_pending_sync');
-          // Solo limpiar caché principal si Firebase confirmó el guardado
-          localStorage.removeItem(STORAGE_KEY);
+          // Borrar caché principal después de 60 segundos (no inmediatamente)
+          setTimeout(function() {
+            // Solo borrar si Firebase sigue siendo la versión más reciente
+            var savedTs = parseInt(localStorage.getItem(STORAGE_KEY + '_ts') || '0');
+            if (savedTs >= _motoLastSaveTs) {
+              localStorage.removeItem(STORAGE_KEY);
+            }
+          }, 60000);
         } catch(e2) {}
-        console.log('[MOTO] ✅ Firebase guardado — respaldo en backup key');
+        console.log('[MOTO] ✅ Firebase guardado correctamente');
       }).catch(function(e) {
         // Firebase falló → guardar en localStorage como emergencia
         try {
@@ -3625,7 +3728,11 @@ function openModal(id) {
   }
 }
 function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+  var el = document.getElementById(id);
+  if (el) {
+    el.classList.remove('open');
+    el.style.display = ''; // Reset inline style
+  }
   if(id==='modal-prod') { editProductId=null; }
 }
 
@@ -6073,89 +6180,7 @@ if (typeof window !== 'undefined') {
   </div>
 </div>
 
-<!-- MODAL PAGO EMPLEADO — SIMPLE Y FUNCIONAL -->
-<div class="modal-overlay" id="modal-emp-detalle">
-  <div class="modal" style="max-width:500px;width:96vw;border-radius:16px;overflow:hidden;">
 
-    <!-- Header -->
-    <div class="modal-head" style="background:linear-gradient(135deg,#1e2435,#2c3e6b);padding:18px 20px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;" id="memp-avatar">F</div>
-        <div>
-          <div style="color:#fff;font-size:17px;font-weight:800;" id="memp-nombre">—</div>
-          <div style="color:rgba(255,255,255,0.6);font-size:12px;">Resumen del día</div>
-        </div>
-      </div>
-      <button style="color:#fff;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;"
-        onclick="document.getElementById('modal-emp-detalle').classList.remove('open')">×</button>
-    </div>
-
-    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
-
-      <!-- Stats del día -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;">
-          <div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Mano de Obra</div>
-          <div style="font-size:17px;font-weight:800;color:#1e293b;" id="memp-mo">$0</div>
-        </div>
-        <div style="background:#fff7ed;border:2px solid var(--accent);border-radius:12px;padding:14px;">
-          <div style="font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ganancia 70%</div>
-          <div style="font-size:17px;font-weight:800;color:var(--accent);" id="memp-ganancia">$0</div>
-        </div>
-        <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:14px;">
-          <div style="font-size:10px;color:#166534;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Por Pagar</div>
-          <div style="font-size:17px;font-weight:800;color:#166534;" id="memp-pendiente">$0</div>
-        </div>
-      </div>
-
-      <!-- Ya pagado hoy -->
-      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:#991b1b;font-weight:600;">Ya pagado hoy:</span>
-        <strong style="font-size:15px;color:#dc2626;" id="memp-yapagado">$0</strong>
-      </div>
-
-      <!-- Trabajos del día -->
-      <div>
-        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">📋 Trabajos registrados hoy</div>
-        <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;max-height:180px;overflow-y:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:12px;">
-            <thead>
-              <tr style="background:#f8fafc;">
-                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Hora</th>
-                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Cliente</th>
-                <th style="padding:8px 10px;text-align:left;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">Descripción</th>
-                <th style="padding:8px 10px;text-align:right;color:#64748b;font-weight:700;border-bottom:1px solid #e2e8f0;">M.Obra</th>
-              </tr>
-            </thead>
-            <tbody id="memp-trabajos">
-              <tr><td colspan="4" style="text-align:center;padding:16px;color:#94a3b8;">Sin trabajos hoy</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Input pago -->
-      <div style="background:#fff7ed;border:2px solid var(--accent);border-radius:12px;padding:16px;">
-        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">💰 Registrar pago</div>
-        <input type="number" id="memp-pagar-val" min="0" placeholder="0"
-          oninput="mpActualizar()"
-          style="width:100%;background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px 14px;color:#1e293b;font-size:22px;font-weight:800;outline:none;text-align:center;box-sizing:border-box;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-          <span style="font-size:12px;color:#64748b;">Saldo después del pago:</span>
-          <strong style="font-size:16px;color:var(--accent);" id="memp-saldo-rest">$0</strong>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Footer botones -->
-    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn btn-secondary" onclick="document.getElementById('modal-emp-detalle').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" onclick="mpRegistrar()" style="font-weight:700;font-size:15px;padding:11px 28px;">
-        ✓ Registrar Pago
-      </button>
-    </div>
-  </div>
 </div>
 
 
@@ -7929,8 +7954,17 @@ function abrirModalPagarEmp(nombre) {
     }
   }
 
+  // ✅ Abrir modal con doble mecanismo para garantizar apertura
   var modal = document.getElementById('modal-emp-detalle');
-  if (modal) modal.classList.add('open');
+  if (modal) {
+    modal.classList.add('open');
+    modal.style.display = 'flex'; // Forzar display por si CSS no aplica
+    modal.style.zIndex = '9999';  // Garantizar que esté encima
+    console.log('[MOTO] Modal pago abierto para:', nombre);
+  } else {
+    console.error('[MOTO] ERROR: modal-emp-detalle no encontrado');
+    toast('Error abriendo modal de pago','error');
+  }
 }
 
 function mpActualizar() {
