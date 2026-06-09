@@ -753,6 +753,7 @@ var _fbOK=false,_db=null,_scanTarget=null,_html5QR=null;
 var _lastSaveTs=0;
 // Nuevo sessionId en cada carga para evitar bloqueo de sync
 var _sid='gm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+var _saveRetries=0; // Contador de reintentos Firebase
 
 function _setupFirebase(){
   if(typeof firebase==='undefined'){
@@ -775,6 +776,15 @@ function _setupFirebase(){
       .catch(function(e){console.warn('[GM] Sin persistencia offline:',e.code);});
     _fbOK=true;
     console.log('[GM] ✅ Firebase listo');
+    // Test de conectividad - detectar error de reglas o permisos
+    _db.get().then(function(){
+      console.log('[GM] ✅ Lectura Firebase OK');
+    }).catch(function(err){
+      console.error('[GM] ❌ Error acceso Firebase:', err.code, err.message);
+      if(err.code==='permission-denied'){
+        console.error('[GM] REGLAS FIRESTORE: Configura las reglas en Firebase Console para permitir lectura/escritura');
+      }
+    });
     // Si hay sesión guardada, iniciar Firebase inmediatamente
     if(typeof initFirebase==='function' && typeof currentUser!=='undefined' && currentUser){
       initFirebase();
@@ -835,12 +845,20 @@ function saveState(){
       setTbStatus('☁️ Guardado en nube');
       console.log('[GM] ✅ Firebase — '+total+' registros');
     }).catch(function(err){
-      // Firebase falló → guardar local y reintentar
+      // Firebase falló → guardar local
       try{localStorage.setItem(SK, payload); localStorage.setItem(SK+'_pending','1');}catch(e){}
       setSyncOK(false);
-      setTbStatus('⚠️ Error — reintentando...');
-      console.warn('[GM] Firebase error, reintentando en 5s:', err);
-      setTimeout(saveState, 5000);
+      // Contar reintentos para no hacer loop infinito
+      _saveRetries = (_saveRetries||0) + 1;
+      if(_saveRetries <= 3){
+        setTbStatus('💾 Guardado local — reintentando...');
+        console.warn('[GM] Firebase error (intento '+_saveRetries+'/3):', err.code||err.message);
+        setTimeout(saveState, 8000 * _saveRetries); // 8s, 16s, 24s
+      } else {
+        setTbStatus('💾 Guardado local');
+        console.warn('[GM] Firebase no disponible — datos guardados localmente');
+        _saveRetries = 0; // Reset para próximo intento manual
+      }
     });
 
   } else {
