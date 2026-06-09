@@ -1754,11 +1754,11 @@ window.addEventListener('load', function(){
   }, 200);
 });
 
-// ✅ AUTO-GUARDADO CADA 2 MINUTOS
+// ✅ AUTO-GUARDADO CADA 30 MINUTOS
 setInterval(function(){
   var total=(state.products||[]).length+(state.ventas||[]).length+(state.clientes||[]).length+(state.movimientos||[]).length+(state.empleados||[]).length+(state.serviciosEmpleados||[]).length;
   if(total>0&&typeof saveState==='function'){saveState();console.log('[GM] Auto-guardado —',total,'registros');}
-},120000);
+},1800000);
 
 // ✅ GUARDAR AL CERRAR LA PESTAÑA/NAVEGADOR
 window.addEventListener('beforeunload',function(){
