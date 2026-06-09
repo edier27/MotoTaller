@@ -807,12 +807,20 @@ var state={products:[],ventas:[],clientes:[],movimientos:[],empleados:[],servici
 var cart=[];
 var _invFilter='todos',_fiadTab='todos',_fiadCliSel=null;
 
-function loadState(){try{var r=localStorage.getItem(SK)||localStorage.getItem(SK+'_backup');if(r){var s=JSON.parse(r);state.empleados=s.empleados||[];state.serviciosEmpleados=s.serviciosEmpleados||[];Object.assign(state,s);}}catch(e){}}
+function loadState(){try{var r=localStorage.getItem(SK)||localStorage.getItem(SK+'_backup');if(r){var s=JSON.parse(r);state.empleados=s.empleados||[];state.serviciosEmpleados=s.serviciosEmpleados||[];
+      state._deleteVersion=s._deleteVersion||0;
+      state._lastModified=s._lastModified||0;
+      // Restaurar lastModified desde localStorage si es más reciente
+      var storedMod=parseInt(localStorage.getItem(SK+'_lastMod')||'0');
+      if(storedMod>state._lastModified) state._lastModified=storedMod;
+      Object.assign(state,s);}}catch(e){}}
 
 // ✅ Marca borrado intencional para que Firebase no lo revierta
 function marcarBorradoIntencional(){
   state._deleteVersion = (state._deleteVersion||0) + 1;
   state._lastModified  = Date.now();
+  // Guardar timestamp en localStorage para que sobreviva al reload
+  try{ localStorage.setItem(SK+'_lastMod', state._lastModified.toString()); }catch(e){}
 }
 
 function saveState(){
@@ -826,12 +834,15 @@ function saveState(){
   if(navigator.onLine && _fbOK && _db){
     // ══ CON INTERNET: guarda directo en Firebase ══════════
     setTbStatus('⏳ Guardando en nube...');
+    // Actualizar timestamp ANTES de guardar
+    state._lastModified = ts;
+    var freshPayload = JSON.stringify(state); // Re-serializar con timestamp actualizado
     _db.set({
-      appData:    payload,
+      appData:    freshPayload,
       updatedAt:  new Date().toISOString(),
       savedBy:    _sid,
       totalRegistros: total,
-      _lastModified:  state._lastModified||ts,
+      _lastModified:  ts,
       _deleteVersion: state._deleteVersion||0
     }).then(function(){
       // Firebase confirmó → guardar solo timestamp y backup ligero
@@ -906,13 +917,18 @@ function initFirebase(){
     console.log('[GM] Snapshot — local:'+localTotal+' Firebase:'+fbTotal+' startup:'+_startupLoad);
     if(_startupLoad){
       _startupLoad=false;
-      // ✅ Firebase tiene MÁS datos → siempre cargar (nunca perder datos)
-      if(fbTotal>localTotal&&fbData&&fbData.appData){
+      var fbLastMod = fbData ? (fbData._lastModified||fbTs||0) : 0;
+      var localLastMod = state._lastModified || _lastSaveTs || 0;
+      console.log('[GM] Startup — fbMod:'+fbLastMod+' localMod:'+localLastMod+' fbTotal:'+fbTotal+' localTotal:'+localTotal);
+
+      // CASO 1: Local está vacío → cargar Firebase siempre
+      if(localTotal===0 && fbTotal>0 && fbData && fbData.appData){
         try{
           var p=JSON.parse(fbData.appData);
           state.products=p.products||[];state.ventas=p.ventas||[];state.clientes=p.clientes||[];
           state.movimientos=p.movimientos||[];state.empleados=p.empleados||[];
-          state.serviciosEmpleados=p.serviciosEmpleados||[];
+          state.serviciosEmpleados=p.serviciosEmpleados||[];state._deleteVersion=p._deleteVersion||0;
+          state._lastModified=p._lastModified||fbTs;
           if(p.config)state.config=p.config;
           localStorage.setItem(SK,JSON.stringify(p));
           localStorage.setItem(SK+'_backup',JSON.stringify(p));
@@ -921,8 +937,28 @@ function initFirebase(){
         }catch(e){console.error('[GM] Error parseando Firebase:',e);}
         return;
       }
-      // Local tiene datos → subirlos a Firebase
-      if(localTotal>0){console.log('[GM] Subiendo datos locales a Firebase...');saveState();}
+
+      // CASO 2: Local tiene datos
+      if(localTotal>0){
+        // Firebase es más reciente (modificado desde otro dispositivo) → cargar Firebase
+        if(fbLastMod > localLastMod && fbTotal>0 && fbData && fbData.appData){
+          try{
+            var p2=JSON.parse(fbData.appData);
+            state.products=p2.products||[];state.ventas=p2.ventas||[];state.clientes=p2.clientes||[];
+            state.movimientos=p2.movimientos||[];state.empleados=p2.empleados||[];
+            state.serviciosEmpleados=p2.serviciosEmpleados||[];state._deleteVersion=p2._deleteVersion||0;
+            state._lastModified=p2._lastModified||fbTs;
+            if(p2.config)state.config=p2.config;
+            localStorage.setItem(SK,JSON.stringify(p2));
+            _lastSaveTs=fbTs;refreshAll();
+            console.log('[GM] Firebase más reciente — cargado');
+          }catch(e){console.error('[GM] Error cargando Firebase:',e);}
+          return;
+        }
+        // Local es más reciente (borrados, modificaciones pendientes) → subir a Firebase
+        console.log('[GM] Local más reciente — subiendo a Firebase');
+        saveState();
+      }
       return;
     }
     // ✅ Sync en tiempo real (multi-dispositivo) — ignorar cambios propios
