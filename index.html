@@ -1136,6 +1136,33 @@ function initFirebase(){
 
       // CASO 2: Local tiene datos
       if(localTotal>0){
+
+        // ✅ RESET FLAG: Si Firebase tiene flag de reset más reciente → borrar local
+        if(fbData && fbData._resetFlag && fbData._resetTimestamp){
+          var resetTs2 = fbData._resetTimestamp;
+          var localResetTs = parseInt(localStorage.getItem(SK+'_resetTs')||'0');
+          if(resetTs2 > localResetTs){
+            // Firebase fue limpiado intencionalmente DESPUÉS de que se guardó local
+            console.log('[GM] 🔴 RESET detectado en Firebase — borrando datos locales');
+            try{
+              var pr=JSON.parse(fbData.appData);
+              state.products=[];state.ventas=[];state.clientes=[];
+              state.movimientos=[];state.empleados=[];state.serviciosEmpleados=[];
+              state._deleteVersion=pr._deleteVersion||0;
+              state._lastModified=pr._lastModified||fbTs;
+              if(pr.config) state.config=pr.config;
+              // Limpiar todo el localStorage
+              localStorage.removeItem(SK);
+              localStorage.removeItem(SK+'_backup');
+              localStorage.removeItem(SK+'_beforeunload');
+              localStorage.setItem(SK+'_resetTs', String(resetTs2));
+              _lastSaveTs=fbTs; refreshAll();
+              toast('🔄 Software reiniciado desde otro dispositivo','info');
+            }catch(e){console.error('[GM] Error aplicando reset:',e);}
+            return;
+          }
+        }
+
         // Firebase es más reciente (modificado desde otro dispositivo) → cargar Firebase
         if(fbLastMod > localLastMod && fbTotal>0 && fbData && fbData.appData){
           try{
@@ -1151,7 +1178,7 @@ function initFirebase(){
           }catch(e){console.error('[GM] Error cargando Firebase:',e);}
           return;
         }
-        // Local es más reciente (borrados, modificaciones pendientes) → subir a Firebase
+        // Local es más reciente → subir a Firebase
         console.log('[GM] Local más reciente — subiendo a Firebase');
         saveState();
       }
@@ -2633,22 +2660,28 @@ function limpiarSoftware(){
     localStorage.removeItem('gm_session');
   }catch(e){}
 
-  // Borrar en Firebase también
+  // Borrar en Firebase con flag RESET para bloquear cualquier dispositivo
   if(_fbOK && _db){
     var emptyPayload = JSON.stringify(state);
+    var resetTs = state._lastModified;
     _db.set({
-      appData:       emptyPayload,
-      updatedAt:     new Date().toISOString(),
-      savedBy:       _sid,
+      appData:        emptyPayload,
+      updatedAt:      new Date().toISOString(),
+      savedBy:        _sid,
       totalRegistros: 0,
-      _lastModified: state._lastModified,
-      _deleteVersion: state._deleteVersion
+      _lastModified:  resetTs,
+      _deleteVersion: state._deleteVersion,
+      _resetFlag:     true,      // ✅ Flag que bloquea cualquier dispositivo
+      _resetTimestamp: resetTs   // Timestamp del reset
     }).then(function(){
-      console.log('[GM] ✅ Software limpiado en Firebase');
+      console.log('[GM] ✅ Software limpiado en Firebase con flag RESET');
+      toast('✅ Firebase limpiado correctamente','success');
     }).catch(function(e){
       console.error('[GM] Error limpiando Firebase:', e);
     });
   }
+  // Guardar el timestamp del reset en localStorage de este dispositivo
+  try{ localStorage.setItem(SK+'_resetTs', String(state._lastModified)); }catch(e){}
 
   // Cerrar modal y refrescar UI
   closeModal('m-config');
