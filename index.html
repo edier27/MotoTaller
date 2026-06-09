@@ -338,8 +338,8 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <aside class="sidebar" id="sidebar">
     <div class="sb-brand">
       <div class="sb-icon">🏍️</div>
-      <div class="sb-name">GlobalMotos</div>
-      <div class="sb-sub">Taller de Motos</div>
+      <div class="sb-name" id="sb-nombre">GlobalMotos</div>
+      <div class="sb-sub" id="sb-subtitulo">Taller de Motos</div>
     </div>
     <div class="sb-sync"><div class="sb-dot" id="sb-dot"></div><span id="sb-sync-lbl">Sincronizado</span></div>
     <nav class="sb-nav">
@@ -927,6 +927,16 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
     <div class="form-group"><label class="form-label">Teléfono</label><input class="form-control" id="cfg-tel" placeholder="300 000 0000"></div>
     <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="cfg-dir"></div>
     <div class="form-group"><label class="form-label">Mensaje en recibo</label><input class="form-control" id="cfg-msg" placeholder="¡Gracias por su compra!"></div>
+
+    <!-- Zona peligrosa -->
+    <div style="margin-top:20px;padding:16px;background:#fef2f2;border:2px solid #fecaca;border-radius:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:18px;">⚠️</span>
+        <div style="font-size:13px;font-weight:800;color:#991b1b;">ZONA DE REINICIO</div>
+      </div>
+      <div style="font-size:12px;color:#7f1d1d;margin-bottom:12px;">Borra <strong>TODOS</strong> los datos: productos, ventas, empleados, clientes, fiados y movimientos. Esta acción no se puede deshacer.</div>
+      <button onclick="limpiarSoftware()" style="width:100%;background:#DC2626;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.5px;">🗑️ LIMPIAR TODO Y EMPEZAR DESDE CERO</button>
+    </div>
   </div>
   <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('m-config')">Cancelar</button><button class="btn btn-primary" onclick="guardarConfig()">💾 Guardar</button></div></div>
 </div>
@@ -1253,10 +1263,22 @@ function randomColor(n){var h=['#EF4444','#F59E0B','#10B981','#3B82F6','#8B5CF6'
 function toast(msg,type,dur){type=type||'info';dur=dur||3000;var w=document.getElementById('toast-wrap');var t=document.createElement('div');t.className='toast '+type;t.textContent=msg;w.appendChild(t);setTimeout(function(){t.remove();},dur);}
 function updateSbTotal(){var t=0;(state.clientes||[]).forEach(function(c){t+=Math.max(0,getDeuda(c.id));});var e=document.getElementById('sb-total-fiados');if(e)e.textContent=fmt(t);}
 function getDeuda(cid){return(state.movimientos||[]).filter(function(m){return m.cid===cid&&m.tipo==='deuda';}).reduce(function(s,m){return s+m.valor;},0)-(state.movimientos||[]).filter(function(m){return m.cid===cid&&m.tipo==='abono';}).reduce(function(s,m){return s+m.valor;},0);}
-function refreshAll(){var pg=document.querySelector('.page.active');if(!pg)return;var id=pg.id.replace('page-','');if(id==='dashboard')renderDashboard();if(id==='inventario')renderInventario();if(id==='fiados')renderFiados();if(id==='reportes')renderReportes();if(id==='caja')renderPosGrid('');updateSbTotal();}
+function refreshAll(){
+  // Aplicar nombre del negocio
+  if(state.config && state.config.nombre){
+    var nb=document.getElementById('sb-nombre');
+    if(nb) nb.textContent=state.config.nombre;
+    document.title=state.config.nombre+' — Taller';
+  }var pg=document.querySelector('.page.active');if(!pg)return;var id=pg.id.replace('page-','');if(id==='dashboard')renderDashboard();if(id==='inventario')renderInventario();if(id==='fiados')renderFiados();if(id==='reportes')renderReportes();if(id==='caja')renderPosGrid('');updateSbTotal();}
 
 // INIT
 function initApp(){
+  // Aplicar nombre guardado inmediatamente
+  if(state.config && state.config.nombre){
+    var nb=document.getElementById('sb-nombre');
+    if(nb) nb.textContent=state.config.nombre;
+    document.title=state.config.nombre+' — Taller';
+  }
   var d=colombiaDate();
   var dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -1866,7 +1888,22 @@ function stopScanner(){if(_html5QR){try{_html5QR.stop().then(function(){_html5QR
 function closeScanner(){stopScanner();document.getElementById('scan-result-box').style.display='none';closeModal('m-scanner');_scanTarget=null;}
 
 // CONFIG
-function guardarConfig(){state.config={nombre:document.getElementById('cfg-nombre').value,nit:document.getElementById('cfg-nit').value,tel:document.getElementById('cfg-tel').value,dir:document.getElementById('cfg-dir').value,msg:document.getElementById('cfg-msg').value};saveState();closeModal('m-config');toast('✅ Configuración guardada','success');}
+function guardarConfig(){
+  state.config={
+    nombre: document.getElementById('cfg-nombre').value.trim()||'Mi Taller',
+    nit:    document.getElementById('cfg-nit').value.trim(),
+    tel:    document.getElementById('cfg-tel').value.trim(),
+    dir:    document.getElementById('cfg-dir').value.trim(),
+    msg:    document.getElementById('cfg-msg').value.trim()
+  };
+  // Actualizar nombre en sidebar y título del navegador inmediatamente
+  var nb=document.getElementById('sb-nombre');
+  if(nb) nb.textContent=state.config.nombre;
+  document.title=state.config.nombre+' — Taller';
+  saveState();
+  closeModal('m-config');
+  toast('✅ Configuración guardada','success');
+}
 function exportarDatos(){var b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='globalmotos_respaldo_'+today()+'.json';a.click();toast('💾 Respaldo descargado','success');}
 
 // ══════════════════════════════════════════
@@ -2558,6 +2595,69 @@ function repDescargarPDF(tipo){
       // La ventana print() del navegador permite "Guardar como PDF" en el destino
     }, 800);
   }
+}
+
+
+// ══════════════════════════════════════════════
+// LIMPIAR SOFTWARE — BORRAR TODOS LOS DATOS
+// ══════════════════════════════════════════════
+function limpiarSoftware(){
+  // Confirmación doble para evitar borrado accidental
+  if(!confirm('⚠️ ADVERTENCIA\n\n¿Está seguro que desea BORRAR TODOS los datos?\n\nSe eliminarán:\n• Todos los productos\n• Todas las ventas\n• Todos los empleados\n• Todos los clientes\n• Todos los fiados\n• Todos los movimientos\n\nEsta acción NO se puede deshacer.')) return;
+
+  if(!confirm('🔴 ÚLTIMA CONFIRMACIÓN\n\n¿CONFIRMA que desea borrar TODO?\n\nEscriba OK para continuar.') && !confirm('¿Confirma el borrado total?')) return;
+
+  // Guardar solo la configuración del negocio
+  var configGuardada = Object.assign({}, state.config);
+
+  // Resetear todo el state
+  state.products          = [];
+  state.ventas            = [];
+  state.clientes          = [];
+  state.movimientos       = [];
+  state.empleados         = [];
+  state.serviciosEmpleados= [];
+  state._deleteVersion    = (state._deleteVersion||0) + 1;
+  state._lastModified     = Date.now();
+  // Conservar la configuración del negocio
+  state.config = configGuardada;
+
+  // Limpiar localStorage
+  try{
+    localStorage.removeItem(SK);
+    localStorage.removeItem(SK+'_backup');
+    localStorage.removeItem(SK+'_beforeunload');
+    localStorage.removeItem(SK+'_pending');
+    localStorage.removeItem(SK+'_ts');
+    localStorage.removeItem(SK+'_lastMod');
+    localStorage.removeItem('gm_session');
+  }catch(e){}
+
+  // Borrar en Firebase también
+  if(_fbOK && _db){
+    var emptyPayload = JSON.stringify(state);
+    _db.set({
+      appData:       emptyPayload,
+      updatedAt:     new Date().toISOString(),
+      savedBy:       _sid,
+      totalRegistros: 0,
+      _lastModified: state._lastModified,
+      _deleteVersion: state._deleteVersion
+    }).then(function(){
+      console.log('[GM] ✅ Software limpiado en Firebase');
+    }).catch(function(e){
+      console.error('[GM] Error limpiando Firebase:', e);
+    });
+  }
+
+  // Cerrar modal y refrescar UI
+  closeModal('m-config');
+  cart = [];
+  refreshAll();
+  renderDashboard();
+
+  toast('✅ Software limpiado — listo para empezar desde cero','success');
+  console.log('[GM] Software reseteado completamente');
 }
 
 </script>
