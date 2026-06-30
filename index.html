@@ -59,24 +59,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 @media(max-width:767px){#login-screen{flex-direction:column;}.ll{padding:40px 28px 32px;min-height:auto;}.ll-feats{display:none;}.lr{width:100%;padding:36px 24px;min-height:auto;}}
 
 /* SIDEBAR */
-.sidebar{width:var(--sidebar-w);min-height:100vh;background:#1a1a2e;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s;}
-.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
-.sb-icon{width:42px;height:42px;background:var(--accent);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:9px;box-shadow:0 4px 12px rgba(232,122,0,.4);}
-.sb-name{font-size:15px;font-weight:800;color:#fff;}
-.sb-sub{font-size:11px;color:rgba(255,255,255,.38);margin-top:2px;}
-.sb-sync{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.48);padding:8px 18px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.sb-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:9px;box-shadow:0 4px 12px rgba(232,122,0,.32);}
+.sb-name{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:.2px;}
+.sb-sub{font-size:10px;color:var(--ink3);margin-top:3px;letter-spacing:.8px;text-transform:uppercase;font-weight:700;}
+.sb-sync{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);padding:9px 18px;border-bottom:1px solid var(--border);}
 .sb-dot{width:7px;height:7px;border-radius:50%;background:#10B981;box-shadow:0 0 6px #10B981;flex-shrink:0;}
-.sb-nav{flex:1;padding:8px 0;}
-.sb-sec{font-size:9px;font-weight:700;color:rgba(255,255,255,.24);letter-spacing:1.5px;text-transform:uppercase;padding:12px 18px 4px;}
-.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;font-weight:600;color:rgba(255,255,255,.62);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all .15s;position:relative;}
-.sb-item:hover{background:rgba(255,255,255,.06);color:#fff;}
-.sb-item.active{background:rgba(232,122,0,.18);color:#fff;}
-.sb-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:0 3px 3px 0;}
-.sb-item-ic{font-size:16px;width:20px;text-align:center;}
-.sb-footer{padding:12px 18px;border-top:1px solid rgba(255,255,255,.08);}
-.sb-total{background:rgba(232,122,0,.14);border:1px solid rgba(232,122,0,.28);border-radius:10px;padding:10px 12px;}
-.sb-total-lbl{font-size:10px;color:rgba(255,255,255,.38);margin-bottom:3px;}
-.sb-total-val{font-size:16px;font-weight:800;color:#FBB040;}
+.sb-nav{flex:1;padding:8px 10px;}
+.sb-sec{font-size:9px;font-weight:800;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;padding:14px 8px 5px;}
+.sb-item{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-bottom:2px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;border:none;background:none;width:100%;text-align:left;border-radius:10px;transition:all .15s;position:relative;}
+.sb-item:hover{background:var(--surface2);color:var(--ink);}
+.sb-item.active{background:var(--accent-light);color:var(--accent);font-weight:700;}
+.sb-item-ic{display:inline-flex;align-items:center;justify-content:center;width:20px;flex-shrink:0;}
+.sb-item-ic svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;}
+.sb-footer{padding:12px 14px;border-top:1px solid var(--border);}
+.sb-total{background:var(--accent-light);border:1px solid rgba(232,122,0,.22);border-radius:12px;padding:11px 13px;}
+.sb-total-lbl{font-size:10px;color:var(--ink3);margin-bottom:3px;font-weight:700;letter-spacing:.4px;}
+.sb-total-val{font-size:17px;font-weight:800;color:var(--accent);}
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
 .main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
 
@@ -88,6 +88,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 .tb-btn:active{transform:translateY(0);}
 .tb-btn.ac{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(232,122,0,.32);}
 .tb-btn.ac:hover{box-shadow:0 6px 18px rgba(232,122,0,.42);color:#fff;}
+.tb-btn svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
 .toggle-sb{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink3);padding:4px 8px;}
 
 /* PAGES */
@@ -131,15 +132,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 .badge-orange{background:var(--accent-light);color:var(--accent);}
 .badge-yellow{background:var(--yellow-light);color:var(--yellow);}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:13px;margin-bottom:18px;}
-.stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow);}
-.stat-icon{font-size:22px;margin-bottom:8px;}
+.stat-card{position:relative;background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 16px 16px 19px;box-shadow:var(--shadow);overflow:hidden;transition:transform .15s ease,box-shadow .2s ease;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
+.stat-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;font-size:19px;margin-bottom:10px;background:var(--accent-light);}
 .stat-label{font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;}
 .stat-value{font-size:22px;font-weight:800;font-family:var(--font-head);color:var(--ink);}
 .stat-sub{font-size:11px;color:var(--ink3);margin-top:3px;}
 .stat-card.s-orange .stat-value{color:var(--accent);}
+.stat-card.s-orange::before{background:var(--accent);}.stat-card.s-orange .stat-icon{background:var(--accent-light);}
 .stat-card.s-green  .stat-value{color:var(--green);}
+.stat-card.s-green::before{background:var(--green);}.stat-card.s-green .stat-icon{background:var(--green-light);}
 .stat-card.s-red    .stat-value{color:var(--red);}
+.stat-card.s-red::before{background:var(--red);}.stat-card.s-red .stat-icon{background:var(--red-light);}
 .stat-card.s-blue   .stat-value{color:var(--blue);}
+.stat-card.s-blue::before{background:var(--blue);}.stat-card.s-blue .stat-icon{background:var(--blue-light);}
 table{width:100%;border-collapse:collapse;}
 th{padding:10px 13px;font-size:10px;font-weight:800;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);}
 td{padding:11px 13px;font-size:14px;color:var(--ink2);border-bottom:1px solid var(--border);}
@@ -385,19 +392,19 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
     <div class="sb-sync"><div class="sb-dot" id="sb-dot"></div><span id="sb-sync-lbl">Sincronizado</span></div>
     <nav class="sb-nav">
       <div class="sb-sec">Principal</div>
-      <button class="sb-item active" id="snav-dashboard" onclick="goPage('dashboard',this)"><span class="sb-item-ic">📊</span> Dashboard</button>
-      <button class="sb-item" id="snav-caja" onclick="goPage('caja',this)"><span class="sb-item-ic">🛒</span> Caja / POS</button>
-      <button class="sb-item" id="snav-inventario" onclick="goPage('inventario',this)"><span class="sb-item-ic">📦</span> Inventario</button>
-      <button class="sb-item" id="snav-fiados" onclick="goPage('fiados',this)"><span class="sb-item-ic">💳</span> Fiados</button>
-      <button class="sb-item" id="snav-reportes" onclick="goPage('reportes',this)"><span class="sb-item-ic">📈</span> Reportes</button>
-      <button class="sb-item" id="snav-proveedores" onclick="goPage('proveedores',this)"><span class="sb-item-ic">🚚</span> Proveedores</button>
+      <button class="sb-item active" id="snav-dashboard" onclick="goPage('dashboard',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span> Dashboard</button>
+      <button class="sb-item" id="snav-caja" onclick="goPage('caja',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span> Caja / POS</button>
+      <button class="sb-item" id="snav-inventario" onclick="goPage('inventario',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span> Inventario</button>
+      <button class="sb-item" id="snav-fiados" onclick="goPage('fiados',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Fiados</button>
+      <button class="sb-item" id="snav-reportes" onclick="goPage('reportes',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Reportes</button>
+      <button class="sb-item" id="snav-proveedores" onclick="goPage('proveedores',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span> Proveedores</button>
       <div class="sb-sec">Opciones</div>
-      <button class="sb-item" id="snav-empleados" onclick="goPage('empleados',this)"><span class="sb-item-ic">👷</span> Empleados</button>
-      <button class="sb-item" onclick="abrirMovimiento('entrada')" style="color:#10B981;"><span class="sb-item-ic">💵</span> Entrada / Ingreso</button>
-      <button class="sb-item" onclick="abrirMovimiento('gasto')" style="color:#EF4444;"><span class="sb-item-ic">💸</span> Gasto / Egreso</button>
-      <button class="sb-item" onclick="exportarDatos()"><span class="sb-item-ic">💾</span> Respaldo</button>
-      <button class="sb-item" onclick="openModal('m-config');gmRefreshLicEstado()"><span class="sb-item-ic">⚙️</span> Configuración</button>
-      <button class="sb-item" onclick="gmLogout()" style="color:#EF4444;"><span class="sb-item-ic">🚪</span> Cerrar sesión</button>
+      <button class="sb-item" id="snav-empleados" onclick="goPage('empleados',this)"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Empleados</button>
+      <button class="sb-item" onclick="abrirMovimiento('entrada')" style="color:#10B981;"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span> Entrada / Ingreso</button>
+      <button class="sb-item" onclick="abrirMovimiento('gasto')" style="color:#EF4444;"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></span> Gasto / Egreso</button>
+      <button class="sb-item" onclick="exportarDatos()"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Respaldo</button>
+      <button class="sb-item" onclick="openModal('m-config');gmRefreshLicEstado()"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Configuración</button>
+      <button class="sb-item" onclick="gmLogout()" style="color:#EF4444;"><span class="sb-item-ic"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span> Cerrar sesión</button>
     </nav>
     <div class="sb-footer">
       <div class="sb-total"><div class="sb-total-lbl">FIADOS TOTALES</div><div class="sb-total-val" id="sb-total-fiados">$0</div></div>
@@ -408,8 +415,8 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
       <button class="toggle-sb" onclick="toggleSB()">☰</button>
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <span id="tb-status" style="font-size:12px;color:var(--ink3);"></span>
-      <button class="tb-btn" onclick="openModal('m-scanner')">🔲 <span>Escanear</span></button>
-      <button class="tb-btn ac" onclick="goPage('caja',document.getElementById('snav-caja'))">🛒 <span>Nueva Venta</span></button>
+      <button class="tb-btn" onclick="openModal('m-scanner')"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg> <span>Escanear</span></button>
+      <button class="tb-btn ac" onclick="goPage('caja',document.getElementById('snav-caja'))"><svg viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> <span>Nueva Venta</span></button>
     </header>
 
     <!-- DASHBOARD -->
