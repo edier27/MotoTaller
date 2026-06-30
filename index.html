@@ -51,8 +51,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 .field input{width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:var(--font);color:var(--ink);background:#F9FAFB;outline:none;transition:all .2s;}
 .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,122,0,.12);background:#fff;}
 .field input::placeholder{color:#D1D5DB;}
-.btn-login{width:100%;padding:14px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;font-family:var(--font);border:none;border-radius:11px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(232,122,0,.35);margin-top:4px;}
-.btn-login:hover{background:var(--accent2);}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:700;font-family:var(--font);border:none;border-radius:12px;cursor:pointer;transition:transform .12s ease,box-shadow .2s ease,filter .2s ease;box-shadow:0 4px 16px rgba(232,122,0,.35);margin-top:4px;}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(232,122,0,.45);filter:brightness(1.04);}
+.btn-login:active{transform:translateY(0);}
 .login-err{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:16px;}
 .lr-foot{text-align:center;margin-top:20px;color:#D1D5DB;font-size:11px;}
 @media(max-width:767px){#login-screen{flex-direction:column;}.ll{padding:40px 28px 32px;min-height:auto;}.ll-feats{display:none;}.lr{width:100%;padding:36px 24px;min-height:auto;}}
@@ -82,10 +83,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 /* TOPBAR */
 .topbar{height:58px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:10px;position:sticky;top:0;z-index:50;}
 .topbar-title{font-family:var(--font-head);font-size:17px;font-weight:800;color:var(--ink);flex:1;}
-.tb-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;font-size:12px;font-weight:600;font-family:var(--font);border:1.5px solid var(--border);border-radius:9px;background:#fff;color:var(--ink2);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.tb-btn:hover{border-color:var(--accent);color:var(--accent);}
-.tb-btn.ac{background:var(--accent);border-color:var(--accent);color:#fff;font-size:13px;font-weight:700;}
-.tb-btn.ac:hover{background:var(--accent2);}
+.tb-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:12px;font-weight:600;font-family:var(--font);border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--ink2);cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:transform .12s ease,box-shadow .2s ease,border-color .2s ease,color .15s ease,background .2s ease;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 12px rgba(232,122,0,.13);}
+.tb-btn:active{transform:translateY(0);}
+.tb-btn.ac{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(232,122,0,.32);}
+.tb-btn.ac:hover{box-shadow:0 6px 18px rgba(232,122,0,.42);color:#fff;}
 .toggle-sb{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink3);padding:4px 8px;}
 
 /* PAGES */
@@ -99,14 +101,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 .card-head-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;}
 .card-head-title{font-size:14px;font-weight:700;}
 .card-body{padding:18px;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;font-size:13px;font-weight:700;font-family:var(--font);border-radius:10px;cursor:pointer;transition:all .15s;border:none;}
-.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
-.btn-success{background:var(--green);color:#fff;}.btn-success:hover{background:#047857;}
-.btn-danger{background:var(--red);color:#fff;}
-.btn-secondary{background:var(--surface2);color:var(--ink2);border:1.5px solid var(--border);}.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
-.btn-blue{background:var(--blue);color:#fff;}
-.btn-wa{background:#25D366;color:#fff;}.btn-wa:hover{background:#1DA851;}
-.btn-sm{padding:7px 12px;font-size:12px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;font-size:13px;font-weight:700;font-family:var(--font);border-radius:11px;cursor:pointer;border:none;letter-spacing:.2px;line-height:1;white-space:nowrap;transition:transform .12s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease,color .15s ease;-webkit-tap-highlight-color:transparent;}
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:translateY(0) scale(.985);}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 8px rgba(232,122,0,.32);}
+.btn-primary:hover{box-shadow:0 6px 18px rgba(232,122,0,.42);}
+.btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,.3);}
+.btn-success:hover{box-shadow:0 6px 18px rgba(5,150,105,.42);}
+.btn-danger{background:linear-gradient(135deg,#F05252,#DC2626);color:#fff;box-shadow:0 2px 8px rgba(220,38,38,.28);}
+.btn-danger:hover{box-shadow:0 6px 18px rgba(220,38,38,.4);}
+.btn-secondary{background:#fff;color:var(--ink2);border:1.5px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 4px 12px rgba(232,122,0,.13);}
+.btn-blue{background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3);}
+.btn-blue:hover{box-shadow:0 6px 18px rgba(37,99,235,.42);}
+.btn-wa{background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;box-shadow:0 2px 8px rgba(29,168,81,.32);}
+.btn-wa:hover{box-shadow:0 6px 18px rgba(29,168,81,.42);}
+.btn-sm{padding:8px 13px;font-size:12px;border-radius:9px;}
 .btn-block{width:100%;justify-content:center;}
 .form-group{margin-bottom:14px;}
 .form-label{display:block;font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;}
@@ -379,6 +390,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
       <button class="sb-item" id="snav-inventario" onclick="goPage('inventario',this)"><span class="sb-item-ic">📦</span> Inventario</button>
       <button class="sb-item" id="snav-fiados" onclick="goPage('fiados',this)"><span class="sb-item-ic">💳</span> Fiados</button>
       <button class="sb-item" id="snav-reportes" onclick="goPage('reportes',this)"><span class="sb-item-ic">📈</span> Reportes</button>
+      <button class="sb-item" id="snav-proveedores" onclick="goPage('proveedores',this)"><span class="sb-item-ic">🚚</span> Proveedores</button>
       <div class="sb-sec">Opciones</div>
       <button class="sb-item" id="snav-empleados" onclick="goPage('empleados',this)"><span class="sb-item-ic">👷</span> Empleados</button>
       <button class="sb-item" onclick="abrirMovimiento('entrada')" style="color:#10B981;"><span class="sb-item-ic">💵</span> Entrada / Ingreso</button>
@@ -745,10 +757,55 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
         </div>
       </div>
     </div>
+
+    <!-- PROVEEDORES -->
+    <div class="page" id="page-proveedores">
+      <div class="page-header">
+        <div><div class="page-title">Proveedores</div><div class="page-sub">Guarda tus proveedores y hazles pedidos por WhatsApp</div></div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="provAbrirForm()">➕ Añadir Proveedor</button></div>
+      </div>
+      <div id="prov-list"></div>
+    </div>
   </div>
 </div>
 
 <!-- MODALES -->
+<div class="modal-overlay" id="m-prov-form">
+  <div class="modal"><div class="modal-head"><div class="modal-title" id="prov-form-title">🚚 Nuevo Proveedor</div><button class="modal-close" onclick="closeModal('m-prov-form')">✕</button></div>
+  <div class="modal-body"><input type="hidden" id="prov-id">
+    <div class="form-group"><label class="form-label">Nombre del proveedor *</label><input class="form-control" id="prov-nombre" placeholder="Ej: Alejo Repuestos"></div>
+    <div class="form-group"><label class="form-label">WhatsApp (con indicativo, ej: 573001234567) *</label><input class="form-control" id="prov-wa" type="tel" placeholder="573001234567"></div>
+    <div class="form-group"><label class="form-label">Notas (opcional)</label><input class="form-control" id="prov-notas" placeholder="Ej: Entregas los martes"></div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:800;color:var(--ink);">💳 Cuentas para consignar</div>
+        <button class="btn btn-blue btn-sm" onclick="provToggleAccForm(true)" id="prov-acc-add-btn">+ Añadir cuenta</button>
+      </div>
+      <div id="prov-acc-list"></div>
+      <div id="prov-acc-form" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <div><label class="form-label">Tipo</label>
+            <select class="form-control" id="prov-acc-tipo"><option>Nequi</option><option>Daviplata</option><option>Bancolombia Ahorros</option><option>Bancolombia Corriente</option><option>Davivienda Ahorros</option><option>Banco de Bogotá</option><option>Banco Popular</option><option>AV Villas</option><option>Efecty</option><option>Otro</option></select>
+          </div>
+          <div><label class="form-label">Número / Nequi</label><input class="form-control" id="prov-acc-num" placeholder="3001234567"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Titular (opcional)</label><input class="form-control" id="prov-acc-tit" placeholder="Nombre del titular"></div>
+        <div style="display:flex;gap:8px;"><button class="btn btn-success btn-sm btn-block" onclick="provConfirmarCuenta()">✓ Confirmar cuenta</button><button class="btn btn-secondary btn-sm" onclick="provToggleAccForm(false)">Cancelar</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('m-prov-form')">Cancelar</button><button class="btn btn-primary" id="prov-save-btn" onclick="provGuardar()">💾 Guardar Proveedor</button></div></div>
+</div>
+
+<div class="modal-overlay" id="m-prov-order">
+  <div class="modal"><div class="modal-head"><div class="modal-title" id="prov-order-title">📋 Hacer Pedido</div><button class="modal-close" onclick="closeModal('m-prov-order')">✕</button></div>
+  <div class="modal-body"><input type="hidden" id="prov-order-id">
+    <div id="prov-order-info" style="font-size:12px;color:var(--ink3);margin-bottom:12px;"></div>
+    <div class="form-group"><label class="form-label">¿Qué necesitas pedir?</label><textarea class="form-control" id="prov-order-text" rows="5" placeholder="Ej:&#10;- 4 pastillas de freno Honda CB&#10;- 2 litros aceite 20W50&#10;- 1 kit de arrastre"></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('m-prov-order')">Cancelar</button><button class="btn btn-wa" onclick="provEnviarPedido()">📲 Enviar por WhatsApp</button></div></div>
+</div>
+
 <div class="modal-overlay" id="m-add-prod">
   <div class="modal"><div class="modal-head"><div class="modal-title">📦 Nuevo Producto</div><button class="modal-close" onclick="closeModal('m-add-prod')">✕</button></div>
   <div class="modal-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -1048,7 +1105,8 @@ if(document.readyState==='loading'){
 
 // STATE
 var SK='globalmotos_v1';
-var state={products:[],ventas:[],clientes:[],movimientos:[],empleados:[],serviciosEmpleados:[],config:{nombre:'GlobalMotos Pro',nit:'',tel:'',dir:'',msg:'¡Gracias por su compra!'}};
+var state={products:[],ventas:[],clientes:[],movimientos:[],empleados:[],serviciosEmpleados:[],proveedores:[],config:{nombre:'GlobalMotos Pro',nit:'',tel:'',dir:'',msg:'¡Gracias por su compra!'}};
+var _provAccDraft=[]; // cuentas en edición dentro del formulario de proveedor
 var cart=[];
 var _invFilter='todos',_fiadTab='todos',_fiadCliSel=null;
 
@@ -1176,7 +1234,8 @@ function marcarBorradoIntencional(){
 
 function saveState(){
   var total=(state.products||[]).length+(state.ventas||[]).length+(state.clientes||[]).length
-           +(state.movimientos||[]).length+(state.empleados||[]).length+(state.serviciosEmpleados||[]).length;
+           +(state.movimientos||[]).length+(state.empleados||[]).length+(state.serviciosEmpleados||[]).length
+           +(state.proveedores||[]).length;
   if(total===0){console.warn('[GM] Sin datos — guardado cancelado');return;}
 
   var payload=JSON.stringify(state);
@@ -1279,7 +1338,7 @@ function initFirebase(){
           var p=JSON.parse(fbData.appData);
           state.products=p.products||[];state.ventas=p.ventas||[];state.clientes=p.clientes||[];
           state.movimientos=p.movimientos||[];state.empleados=p.empleados||[];
-          state.serviciosEmpleados=p.serviciosEmpleados||[];state._deleteVersion=p._deleteVersion||0;
+          state.serviciosEmpleados=p.serviciosEmpleados||[];state.proveedores=p.proveedores||[];state._deleteVersion=p._deleteVersion||0;
           state._lastModified=p._lastModified||fbTs;
           if(p.config)state.config=p.config;
           localStorage.setItem(SK,JSON.stringify(p));
@@ -1303,7 +1362,7 @@ function initFirebase(){
             try{
               var pr=JSON.parse(fbData.appData);
               state.products=[];state.ventas=[];state.clientes=[];
-              state.movimientos=[];state.empleados=[];state.serviciosEmpleados=[];
+              state.movimientos=[];state.empleados=[];state.serviciosEmpleados=[];state.proveedores=pr.proveedores||[];
               state._deleteVersion=pr._deleteVersion||0;
               state._lastModified=pr._lastModified||fbTs;
               if(pr.config) state.config=pr.config;
@@ -1325,7 +1384,7 @@ function initFirebase(){
             var p2=JSON.parse(fbData.appData);
             state.products=p2.products||[];state.ventas=p2.ventas||[];state.clientes=p2.clientes||[];
             state.movimientos=p2.movimientos||[];state.empleados=p2.empleados||[];
-            state.serviciosEmpleados=p2.serviciosEmpleados||[];state._deleteVersion=p2._deleteVersion||0;
+            state.serviciosEmpleados=p2.serviciosEmpleados||[];state.proveedores=p2.proveedores||[];state._deleteVersion=p2._deleteVersion||0;
             state._lastModified=p2._lastModified||fbTs;
             if(p2.config)state.config=p2.config;
             localStorage.setItem(SK,JSON.stringify(p2));
@@ -1346,14 +1405,14 @@ function initFirebase(){
     if(fbTs<=_lastSaveTs)return;
     // No sobreescribir si Firebase tiene MENOS datos
     // EXCEPCIÓN: si Firebase tiene _deleteVersion mayor → fue borrado intencional
-    var fbDelVer = (saved&&saved._deleteVersion)||0;
+    var fbDelVer = (doc.data()._deleteVersion)||0;
     var localDelVer = state._deleteVersion||0;
     if(fbTotal<localTotal && fbDelVer<=localDelVer) return;
     try{
       var saved=JSON.parse(doc.data().appData);
       state.products=saved.products||[];state.ventas=saved.ventas||[];state.clientes=saved.clientes||[];
       state.movimientos=saved.movimientos||[];state.empleados=saved.empleados||[];
-      state.serviciosEmpleados=saved.serviciosEmpleados||[];
+      state.serviciosEmpleados=saved.serviciosEmpleados||[];state.proveedores=saved.proveedores||[];
       if(saved.config)state.config=saved.config;
       localStorage.setItem(SK,JSON.stringify(saved));_lastSaveTs=fbTs;refreshAll();
       toast('🔄 Actualizado desde otro dispositivo','info');
@@ -1582,15 +1641,16 @@ function goPage(id,btn){
   if(id==='inventario')renderInventario();
   if(id==='fiados')renderFiados();
   if(id==='reportes')renderReportes();
+  if(id==='proveedores')renderProveedores();
   if(id==='empleados') renderEmpPage();
   if(id==='caja'){renderPosGrid('');setTimeout(function(){var i=document.getElementById('barcode-input');if(i)i.focus();},200);}
 }
 function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sb-overlay').classList.toggle('open');}
 function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').classList.remove('open');}
-function openModal(id){document.getElementById(id).classList.add('open');}
+function openModal(id){var el=document.getElementById(id);if(el){el.style.display='';el.classList.add('open');}}
 function closeModal(id){
   var el=document.getElementById(id);
-  if(el){ el.classList.remove('open'); el.style.cssText='display:none'; }
+  if(el){ el.classList.remove('open'); el.style.display=''; }
   if(id==='modal-prod'){editProductId=null;}
 }
 
@@ -2592,6 +2652,152 @@ function enviarWAEmpleado(empId){
 }
 
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  PROVEEDORES — guardar proveedores + pedidos por WhatsApp (igual a ACCE PRO)
+// ═══════════════════════════════════════════════════════════════════════════
+function renderProveedores(){
+  var el=document.getElementById('prov-list'); if(!el) return;
+  var provs=state.proveedores||[];
+  if(!provs.length){
+    el.innerHTML='<div style="text-align:center;padding:54px 24px;color:var(--ink3);background:#fff;border-radius:var(--r-lg);border:1.5px dashed var(--border);">'
+      +'<div style="font-size:42px;margin-bottom:12px;">🚚</div>'
+      +'<div style="font-size:15px;font-weight:700;color:var(--ink2);margin-bottom:6px;">Sin proveedores aún</div>'
+      +'<div style="font-size:13px;">Añade un proveedor para hacerle pedidos por WhatsApp en segundos.</div></div>';
+    return;
+  }
+  el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;">'
+    +provs.map(function(p){
+      var accs=p.accounts||[];
+      var accHtml=accs.length?('<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:2px;">'
+        +'<div style="font-size:10px;color:var(--ink3);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px;">💳 Cuentas</div>'
+        +accs.map(function(a){
+          return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;">'
+            +'<span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--ink2);">'+_gmEsc(a.type)+'</span>'
+            +'<span style="font-size:12px;font-family:monospace;color:var(--ink);">'+_gmEsc(a.number)+'</span>'
+            +(a.holder?'<span style="font-size:11px;color:var(--ink3);">· '+_gmEsc(a.holder)+'</span>':'')
+            +'</div>';
+        }).join('')+'</div>'):'';
+      return '<div style="background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;display:flex;flex-direction:column;gap:11px;box-shadow:var(--shadow);">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">'
+          +'<div style="min-width:0;">'
+            +'<div style="font-weight:800;font-size:15px;color:var(--ink);margin-bottom:3px;">'+_gmEsc(p.name)+'</div>'
+            +'<div style="font-size:12px;color:var(--ink3);">📱 +'+_gmEsc(p.whatsapp)+'</div>'
+            +(p.notes?'<div style="font-size:12px;color:var(--ink3);font-style:italic;margin-top:3px;">'+_gmEsc(p.notes)+'</div>':'')
+          +'</div>'
+          +'<div style="display:flex;gap:4px;flex-shrink:0;">'
+            +'<button onclick="provAbrirForm(\''+p.id+'\')" title="Editar" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:15px;padding:3px 5px;border-radius:6px;">✏️</button>'
+            +'<button onclick="provEliminar(\''+p.id+'\')" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:15px;padding:3px 5px;border-radius:6px;">🗑️</button>'
+          +'</div>'
+        +'</div>'
+        +accHtml
+        +'<button class="btn btn-wa btn-block" onclick="provAbrirPedido(\''+p.id+'\')">📋 Hacer Pedido por WhatsApp</button>'
+      +'</div>';
+    }).join('')+'</div>';
+}
+
+function provToggleAccForm(show){
+  var f=document.getElementById('prov-acc-form'), b=document.getElementById('prov-acc-add-btn');
+  if(f) f.style.display=show?'block':'none';
+  if(b) b.style.display=show?'none':'';
+  if(show){ document.getElementById('prov-acc-num').value=''; document.getElementById('prov-acc-tit').value=''; document.getElementById('prov-acc-tipo').selectedIndex=0; }
+}
+function _provRenderAccDraft(){
+  var c=document.getElementById('prov-acc-list');
+  if(!c) return;
+  if(!_provAccDraft.length){ c.innerHTML='<div style="font-size:12px;color:var(--ink3);text-align:center;padding:6px 0;">Sin cuentas añadidas aún</div>'; return; }
+  c.innerHTML=_provAccDraft.map(function(a){
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;">'
+      +'<span style="background:rgba(37,99,235,.12);color:var(--blue);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;">'+_gmEsc(a.type)+'</span>'
+      +'<span style="font-size:13px;font-family:monospace;color:var(--ink);flex:1;">'+_gmEsc(a.number)+'</span>'
+      +(a.holder?'<span style="font-size:12px;color:var(--ink3);">'+_gmEsc(a.holder)+'</span>':'')
+      +'<button onclick="provQuitarCuenta(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;">🗑️</button>'
+    +'</div>';
+  }).join('');
+}
+function provConfirmarCuenta(){
+  var num=_gmClean((document.getElementById('prov-acc-num').value||'').trim());
+  if(!num){ toast('⚠️ Escribe el número de cuenta','warning'); return; }
+  _provAccDraft.push({ id:uid(), type:document.getElementById('prov-acc-tipo').value, number:num, holder:_gmClean((document.getElementById('prov-acc-tit').value||'').trim()) });
+  _provRenderAccDraft();
+  provToggleAccForm(false);
+}
+function provQuitarCuenta(accId){
+  _provAccDraft=_provAccDraft.filter(function(a){ return a.id!==accId; });
+  _provRenderAccDraft();
+}
+
+function provAbrirForm(id){
+  var prov=(state.proveedores||[]).find(function(p){ return p.id===id; });
+  document.getElementById('prov-id').value=prov?prov.id:'';
+  document.getElementById('prov-nombre').value=prov?prov.name:'';
+  document.getElementById('prov-wa').value=prov?prov.whatsapp:'';
+  document.getElementById('prov-notas').value=prov?(prov.notes||''):'';
+  _provAccDraft=prov?(prov.accounts||[]).slice():[];
+  document.getElementById('prov-form-title').textContent=prov?'✏️ Editar Proveedor':'🚚 Nuevo Proveedor';
+  document.getElementById('prov-save-btn').textContent=prov?'💾 Actualizar':'💾 Guardar Proveedor';
+  _provRenderAccDraft();
+  provToggleAccForm(false);
+  openModal('m-prov-form');
+}
+function provGuardar(){
+  var name=_gmClean((document.getElementById('prov-nombre').value||'').trim());
+  var wa=(document.getElementById('prov-wa').value||'').replace(/[^0-9]/g,'');
+  var notes=_gmClean((document.getElementById('prov-notas').value||'').trim());
+  if(!name){ toast('⚠️ Escribe el nombre del proveedor','warning'); return; }
+  if(!wa){ toast('⚠️ Escribe el WhatsApp (con indicativo)','warning'); return; }
+  var id=document.getElementById('prov-id').value;
+  state.proveedores=state.proveedores||[];
+  var payload={ name:name, whatsapp:wa, notes:notes, accounts:_provAccDraft.slice() };
+  if(id){
+    state.proveedores=state.proveedores.map(function(p){ return p.id===id?Object.assign({},p,payload):p; });
+    toast('✅ Proveedor actualizado','success');
+  } else {
+    state.proveedores.push(Object.assign({ id:uid() }, payload));
+    toast('✅ Proveedor añadido','success');
+  }
+  saveState();
+  closeModal('m-prov-form');
+  renderProveedores();
+}
+function provEliminar(id){
+  if(!confirm('¿Eliminar este proveedor?')) return;
+  state.proveedores=(state.proveedores||[]).filter(function(p){ return p.id!==id; });
+  saveState();
+  renderProveedores();
+  toast('Proveedor eliminado','info');
+}
+
+function provAbrirPedido(id){
+  var prov=(state.proveedores||[]).find(function(p){ return p.id===id; });
+  if(!prov) return;
+  document.getElementById('prov-order-id').value=prov.id;
+  document.getElementById('prov-order-title').textContent='📋 Pedido a '+prov.name;
+  var accs=prov.accounts||[];
+  var info='📱 WhatsApp: +'+_gmEsc(prov.whatsapp);
+  if(accs.length){
+    info+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:8px;">'
+      +'<div style="font-size:10px;color:var(--ink3);font-weight:700;text-transform:uppercase;margin-bottom:5px;">💳 Cuentas del proveedor</div>'
+      +accs.map(function(a){ return '<div style="font-size:12px;margin-bottom:2px;"><strong style="color:var(--blue);">'+_gmEsc(a.type)+':</strong> <span style="font-family:monospace;">'+_gmEsc(a.number)+'</span>'+(a.holder?' <span style="color:var(--ink3);">('+_gmEsc(a.holder)+')</span>':'')+'</div>'; }).join('')
+      +'</div>';
+  }
+  document.getElementById('prov-order-info').innerHTML=info;
+  document.getElementById('prov-order-text').value='';
+  openModal('m-prov-order');
+}
+function provEnviarPedido(){
+  var id=document.getElementById('prov-order-id').value;
+  var prov=(state.proveedores||[]).find(function(p){ return p.id===id; });
+  if(!prov) return;
+  var draft=(document.getElementById('prov-order-text').value||'').trim();
+  if(!draft){ toast('⚠️ Escribe lo que necesitas pedir','warning'); return; }
+  var tienda=(state.config&&state.config.nombre)||'GlobalMotos Pro';
+  var accBlock=(prov.accounts||[]).length?('\n\n💳 *Cuentas para consignar:*\n'+prov.accounts.map(function(a){ return '• '+a.type+': '+a.number+(a.holder?' ('+a.holder+')':''); }).join('\n')):'';
+  var msg='🛒 *PEDIDO - '+tienda+'*\n\n'+draft+accBlock+'\n\n_Enviado desde '+tienda+'_';
+  window.open('https://wa.me/'+prov.whatsapp+'?text='+encodeURIComponent(msg),'_blank');
+  closeModal('m-prov-order');
+  toast('📲 Abriendo WhatsApp...','success');
+}
+
 // ✅ RESTAURAR SESIÓN AL CARGAR LA PÁGINA
 window.addEventListener('load', function(){
   setTimeout(function(){
@@ -3048,6 +3254,7 @@ function limpiarSoftware(){
   state.movimientos       = [];
   state.empleados         = [];
   state.serviciosEmpleados= [];
+  state.proveedores       = [];
   state._deleteVersion    = (state._deleteVersion||0) + 1;
   state._lastModified     = Date.now();
   // Conservar la configuración del negocio
