@@ -384,7 +384,8 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
       <button class="sb-item" onclick="abrirMovimiento('entrada')" style="color:#10B981;"><span class="sb-item-ic">💵</span> Entrada / Ingreso</button>
       <button class="sb-item" onclick="abrirMovimiento('gasto')" style="color:#EF4444;"><span class="sb-item-ic">💸</span> Gasto / Egreso</button>
       <button class="sb-item" onclick="exportarDatos()"><span class="sb-item-ic">💾</span> Respaldo</button>
-      <button class="sb-item" onclick="openModal('m-config')"><span class="sb-item-ic">⚙️</span> Configuración</button>
+      <button class="sb-item" onclick="openModal('m-config');gmRefreshLicEstado()"><span class="sb-item-ic">⚙️</span> Configuración</button>
+      <button class="sb-item" onclick="gmLogout()" style="color:#EF4444;"><span class="sb-item-ic">🚪</span> Cerrar sesión</button>
     </nav>
     <div class="sb-footer">
       <div class="sb-total"><div class="sb-total-lbl">FIADOS TOTALES</div><div class="sb-total-val" id="sb-total-fiados">$0</div></div>
@@ -958,6 +959,19 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
     <div class="form-group"><label class="form-label">Dirección</label><input class="form-control" id="cfg-dir"></div>
     <div class="form-group"><label class="form-label">Mensaje en recibo</label><input class="form-control" id="cfg-msg" placeholder="¡Gracias por su compra!"></div>
 
+    <!-- Licencia -->
+    <div style="margin-top:20px;padding:16px;background:#F0FDF4;border:2px solid #BBF7D0;border-radius:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:18px;">🔑</span>
+        <div style="font-size:13px;font-weight:800;color:#065F46;">LICENCIA</div>
+      </div>
+      <div id="cfg-lic-estado" style="font-size:12px;color:#047857;margin-bottom:10px;">—</div>
+      <label class="form-label" style="font-size:12px;">¿Tienes un código nuevo? Actívalo aquí (renovar o subir de plan):</label>
+      <input class="form-control" id="cfg-lic-code" placeholder="Ej: PRO-XXXXX-XXXXX" style="text-transform:uppercase;margin:6px 0 8px;" onkeydown="if(event.key==='Enter')gmActivarLicencia()">
+      <button onclick="gmActivarLicencia()" style="width:100%;background:#10B981;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;">🔓 Activar código</button>
+      <div id="cfg-lic-msg" style="font-size:12px;margin-top:8px;"></div>
+    </div>
+
     <!-- Zona peligrosa -->
     <div style="margin-top:20px;padding:16px;background:#fef2f2;border:2px solid #fecaca;border-radius:12px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -1489,6 +1503,47 @@ function gmLogout(){
   document.getElementById('gm-expired-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   gmShowLogin();
+}
+
+// ─── Estado/activación de licencia desde Configuración ────
+function gmRefreshLicEstado(){
+  var el=document.getElementById('cfg-lic-estado'); if(!el) return;
+  var uid=_gmCurrentUid();
+  if(_gmIsAdminUid(uid)){ el.textContent='Administrador — acceso permanente (sin licencia).'; return; }
+  _gmLoadProfile(uid).then(function(prof){
+    var lic=gmVerificarCodigo((prof&&prof.licenseCode)||'');
+    if(!lic.valid){ el.innerHTML='<span style="color:#B91C1C;font-weight:700">Sin licencia activa o vencida.</span>'; }
+    else if(lic.type==='pro'){ el.innerHTML='✅ <strong>Licencia PRO</strong> — acceso permanente.'; }
+    else { el.innerHTML='🕐 <strong>'+(lic.minsLeft!=null?lic.minsLeft+' min':lic.daysLeft+' día(s)')+'</strong> restante(s).'; }
+  });
+}
+function gmActivarLicencia(){
+  var code=(document.getElementById('cfg-lic-code').value||'').trim().toUpperCase();
+  var msg=document.getElementById('cfg-lic-msg'); msg.style.color=''; msg.textContent='';
+  // El admin no usa licencia (no desviar su clientId/datos).
+  if(_gmIsAdminUid(_gmCurrentUid())){ msg.style.color='#B91C1C'; msg.textContent='Eres administrador: tu cuenta no necesita licencia.'; return; }
+  var lic=gmVerificarCodigo(code);
+  if(!lic.valid){ msg.style.color='#B91C1C'; msg.textContent=lic.error||'Código inválido.'; return; }
+  var uid=_gmCurrentUid();
+  msg.style.color='#10B981'; msg.textContent='Verificando...';
+  _gmValidarCodigoServidor(code,uid).then(function(chk){
+    if(!chk.ok){ msg.style.color='#B91C1C'; msg.textContent=chk.error; return; }
+    _gmLoadProfile(uid).then(function(prof){
+      if(!prof){ prof={uid:uid}; }
+      // clientId PERMANENTE: la activación NUNCA cambia el taller (anti-pérdida)
+      var perm=null; try{ perm=localStorage.getItem('gm_perm_clientId_'+uid); }catch(e){}
+      var cid=perm||prof.clientId||window.__gmClientId;
+      if(!cid){ msg.style.color='#B91C1C'; msg.textContent='No pudimos identificar tu taller. Cierra sesión y vuelve a entrar.'; return; }
+      prof.uid=uid; prof.licenseCode=code; prof.licenseType=lic.type; prof.clientId=cid;
+      try{ localStorage.setItem('gm_perm_clientId_'+uid,cid); }catch(e){}
+      _gmSaveProfile(prof);
+      var db=window.__gmDB, codeKey='code_LIC_'+code.replace(/[^A-Z0-9]/g,'_');
+      if(db) db.collection('motos_users').doc(codeKey).set({used:true,usedBy:uid,usedByUser:prof.username||'',usedAt:new Date().toISOString(),usedClientId:cid,codeType:lic.type,code:code},{merge:true}).catch(function(){});
+      msg.style.color='#10B981'; msg.textContent='✅ Licencia activada. ¡Listo!';
+      try{ document.getElementById('cfg-lic-code').value=''; }catch(e){}
+      gmRefreshLicEstado();
+    });
+  });
 }
 
 // ─── Auto-login por Firebase Auth (sesión persistente) ────
