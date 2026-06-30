@@ -1473,7 +1473,10 @@ function gmRenovar(){
     _gmLoadProfile(uid).then(function(prof){
       if(!prof){ prof={uid:uid}; }
       var perm=null; try{ perm=localStorage.getItem('gm_perm_clientId_'+uid); }catch(e){}
-      var cid=perm||prof.clientId;
+      // lic.clientId como último recurso: si el perfil en Firestore no guardó clientId
+      // (fallo silencioso en el registro), es seguro derivarlo del nuevo código porque
+      // no hay datos previos bajo ningún clientId para esta cuenta.
+      var cid=perm||prof.clientId||lic.clientId;
       if(!cid){ errEl.textContent='No pudimos identificar tu taller. Cierra sesión y vuelve a entrar.'; return; }
       prof.uid=uid; prof.licenseCode=code; prof.licenseType=lic.type; prof.clientId=cid;
       try{ localStorage.setItem('gm_perm_clientId_'+uid,cid); }catch(e){}
@@ -1532,7 +1535,7 @@ function gmActivarLicencia(){
       if(!prof){ prof={uid:uid}; }
       // clientId PERMANENTE: la activación NUNCA cambia el taller (anti-pérdida)
       var perm=null; try{ perm=localStorage.getItem('gm_perm_clientId_'+uid); }catch(e){}
-      var cid=perm||prof.clientId||window.__gmClientId;
+      var cid=perm||prof.clientId||window.__gmClientId||lic.clientId;
       if(!cid){ msg.style.color='#B91C1C'; msg.textContent='No pudimos identificar tu taller. Cierra sesión y vuelve a entrar.'; return; }
       prof.uid=uid; prof.licenseCode=code; prof.licenseType=lic.type; prof.clientId=cid;
       try{ localStorage.setItem('gm_perm_clientId_'+uid,cid); }catch(e){}
