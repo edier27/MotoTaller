@@ -511,7 +511,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
             <div class="cash-row"><input id="cash-input" type="number" placeholder="$0" oninput="calcCambio()"><button class="btn btn-secondary btn-sm" onclick="setCash()">Exacto</button></div>
             <div class="cambio-row" id="cambio-row" style="display:none;"><span class="cambio-lbl">Cambio</span><span class="cambio-val" id="cambio-val">$0</span></div>
             <div style="display:flex;flex-direction:column;gap:7px;">
-              <button class="btn btn-success btn-block" onclick="cobrar('efectivo')">💵 Cobrar Efectivo</button>
+              <button class="btn btn-success btn-block" onclick="abrirPagoEfectivo()">💵 Cobrar Efectivo</button>
               <button class="btn btn-blue btn-block" onclick="cobrar('transferencia')">📲 Transferencia / Nequi</button>
               <button class="btn btn-secondary btn-block" onclick="cobrarFiado()">📋 Cobrar a Fiado</button>
               <button class="btn btn-secondary btn-sm btn-block" onclick="limpiarCarrito()" style="color:var(--red);border-color:var(--red);">🗑️ Cancelar venta</button>
@@ -887,6 +887,25 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
 <div class="modal-overlay" id="m-scanner">
   <div class="modal"><div class="modal-head"><div class="modal-title">🔲 Escáner de Código de Barras</div><button class="modal-close" onclick="closeScanner()">✕</button></div>
   <div class="modal-body"><div id="reader"></div><div id="scan-result-box" style="background:var(--green-light);border:1.5px solid #A7F3D0;border-radius:10px;padding:12px 14px;margin-top:12px;display:none;"><div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px;">✅ Código detectado:</div><div style="font-size:18px;font-weight:800;color:var(--ink);font-family:monospace;" id="scan-result-text"></div></div><div style="margin-top:12px;font-size:12px;color:var(--ink3);text-align:center;">Apunte la cámara al código de barras</div></div></div>
+</div>
+
+<div class="modal-overlay" id="m-pago-efectivo">
+  <div class="modal" style="max-width:420px;"><div class="modal-head"><div class="modal-title">💵 Cobro en Efectivo</div><button class="modal-close" onclick="closeModal('m-pago-efectivo')">✕</button></div>
+  <div class="modal-body">
+    <div style="background:linear-gradient(135deg,#065f46,#047857);border-radius:14px;padding:16px 18px;text-align:center;margin-bottom:16px;box-shadow:0 4px 16px rgba(6,95,70,.3);">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:1px;text-transform:uppercase;">Total a pagar</div>
+      <div style="font-size:32px;font-weight:900;color:#fff;font-family:var(--font-head);" id="pe-total">$0</div>
+    </div>
+    <div class="form-group"><label class="form-label">¿Con cuánto paga el cliente?</label>
+      <input class="form-control" id="pe-recibido" type="number" min="0" placeholder="Ej: 100000" oninput="peCalc()" onkeydown="if(event.key==='Enter')confirmarPagoEfectivo()" style="font-size:20px;font-weight:800;text-align:center;">
+    </div>
+    <div id="pe-quick" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;justify-content:center;"></div>
+    <div id="pe-cambio-row" style="border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border:1.5px dashed var(--border);transition:background .2s;">
+      <span style="font-size:13px;font-weight:700;color:var(--ink2);">Cambio / Devuelta</span>
+      <span style="font-size:24px;font-weight:900;font-family:var(--font-head);" id="pe-cambio">$0</span>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('m-pago-efectivo')">Cancelar</button><button class="btn btn-success" id="pe-confirm" onclick="confirmarPagoEfectivo()" disabled>✓ Confirmar venta</button></div></div>
 </div>
 
 <div class="modal-overlay" id="m-cobrar-fiado">
@@ -1822,6 +1841,47 @@ function cobrar(tipo){
   if(!cart.length){toast('⚠️ Carrito vacío','warning');return;}
   registrarVenta(tipo,null);
 }
+// ─── Modal de cobro en efectivo (total + paga con + cambio) ─
+function abrirPagoEfectivo(){
+  if(!cart.length){toast('⚠️ Carrito vacío','warning');return;}
+  var total=cart.reduce(function(s,i){return s+i.precio*i.qty;},0);
+  document.getElementById('pe-total').textContent=fmt(total);
+  document.getElementById('pe-recibido').value='';
+  var cv=document.getElementById('pe-cambio'); cv.textContent='$0'; cv.style.color='var(--ink)';
+  document.getElementById('pe-cambio-row').style.background='';
+  document.getElementById('pe-confirm').disabled=true;
+  // Botones rápidos: Exacto + billetes comunes mayores al total
+  var opts=[{label:'Exacto',val:total}];
+  [10000,20000,50000,100000].forEach(function(b){ if(b>total) opts.push({label:fmt(b),val:b}); });
+  document.getElementById('pe-quick').innerHTML=opts.map(function(o){
+    return '<button class="btn btn-secondary btn-sm" onclick="peSet('+o.val+')">'+o.label+'</button>';
+  }).join('');
+  openModal('m-pago-efectivo');
+  setTimeout(function(){var i=document.getElementById('pe-recibido');if(i)i.focus();},150);
+}
+function peSet(v){ document.getElementById('pe-recibido').value=v; peCalc(); }
+function peCalc(){
+  var total=cart.reduce(function(s,i){return s+i.precio*i.qty;},0);
+  var rec=parseFloat(document.getElementById('pe-recibido').value)||0;
+  var cv=document.getElementById('pe-cambio'), row=document.getElementById('pe-cambio-row'), btn=document.getElementById('pe-confirm');
+  if(rec<total){
+    cv.textContent='Falta '+fmt(total-rec); cv.style.color='var(--red)';
+    row.style.background='var(--red-light)'; row.style.borderColor='var(--red)';
+    btn.disabled=true;
+  } else {
+    cv.textContent=fmt(rec-total); cv.style.color='var(--green)';
+    row.style.background='var(--green-light)'; row.style.borderColor='var(--green)';
+    btn.disabled=false;
+  }
+}
+function confirmarPagoEfectivo(){
+  if(!cart.length){toast('⚠️ Carrito vacío','warning');return;}
+  var total=cart.reduce(function(s,i){return s+i.precio*i.qty;},0);
+  var rec=parseFloat(document.getElementById('pe-recibido').value)||0;
+  if(rec<total){toast('⚠️ El efectivo recibido es menor al total','warning');return;}
+  registrarVenta('efectivo',null,{recibido:rec,cambio:rec-total});
+  closeModal('m-pago-efectivo');
+}
 function cobrarFiado(){
   if(!cart.length){toast('⚠️ Carrito vacío','warning');return;}
   var total=cart.reduce(function(s,i){return s+i.precio*i.qty;},0);
@@ -1850,10 +1910,10 @@ function confirmarFiado(){
   state.movimientos.push({id:uid(),cid:_fiadCliSel.id,tipo:'deuda',producto:desc,cantidad:1,valor:total,fecha:nowDT(),valorUnit:total});
   registrarVenta('fiado',_fiadCliSel.id);closeModal('m-cobrar-fiado');
 }
-function registrarVenta(tipo,clienteId){
+function registrarVenta(tipo,clienteId,extra){
   var total=cart.reduce(function(s,i){return s+i.precio*i.qty;},0);
   cart.forEach(function(item){if(item.esLibre||item.esPesa)return;var prod=(state.products||[]).find(function(p){return p.id===item.id;});if(prod)prod.stock=Math.max(0,prod.stock-item.qty);});
-  state.ventas.push({id:uid(),items:cart.map(function(i){return{id:i.id,nombre:i.nombre,qty:i.qty,precio:i.precio};}),total:total,tipo:tipo,clienteId:clienteId||null,fecha:nowDT()});
+  state.ventas.push({id:uid(),items:cart.map(function(i){return{id:i.id,nombre:i.nombre,qty:i.qty,precio:i.precio};}),total:total,tipo:tipo,clienteId:clienteId||null,fecha:nowDT(),recibido:(extra&&extra.recibido)||null,cambio:(extra&&extra.cambio)||null});
   saveState();toast('✅ Venta registrada — '+fmt(total),'success');limpiarCarrito();renderDashboard();
 }
 function limpiarCarrito(){cart=[];document.getElementById('cash-input').value='';renderCart();}
