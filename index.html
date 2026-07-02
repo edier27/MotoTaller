@@ -494,7 +494,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
           <!-- Buscar producto -->
           <div class="card"><div class="card-head"><div class="card-head-ic" style="background:var(--accent-light);">🔍</div><div class="card-head-title">Buscar Producto</div></div>
             <div class="card-body" style="padding:14px;">
-              <input class="form-control" id="pos-search" placeholder="Nombre del producto..." oninput="renderPosGrid(this.value)" style="margin-bottom:12px;">
+              <input class="form-control" id="pos-search" placeholder="Nombre del producto..." oninput="renderPosGrid(this.value)" onkeydown="bcCorregirTecla(event)" style="margin-bottom:12px;">
               <div class="pos-prod-grid" id="pos-prod-grid"></div>
             </div>
           </div>
@@ -525,7 +525,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
     <div class="page" id="page-inventario">
       <div class="page-header">
         <div><div class="page-title">Inventario</div><div class="page-sub" id="inv-count"></div></div>
-        <div class="header-actions"><div class="search-box"><input id="inv-search" placeholder="Buscar..." oninput="renderInventario()"></div><button class="btn btn-primary" onclick="openModal('m-add-prod')">+ Nuevo Producto</button></div>
+        <div class="header-actions"><div class="search-box"><input id="inv-search" placeholder="Buscar..." oninput="renderInventario()" onkeydown="bcCorregirTecla(event)"></div><button class="btn btn-primary" onclick="openModal('m-add-prod')">+ Nuevo Producto</button></div>
       </div>
       <div class="inv-filters">
         <button class="filter-btn active" onclick="setInvFilter('todos',this)">Todos</button>
@@ -817,7 +817,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <div class="modal"><div class="modal-head"><div class="modal-title">📦 Nuevo Producto</div><button class="modal-close" onclick="closeModal('m-add-prod')">✕</button></div>
   <div class="modal-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div class="form-group" style="grid-column:span 2;"><label class="form-label">Nombre *</label><input class="form-control" id="np-nombre" placeholder="Ej: Aceite 20W50, Pastilla freno..."></div>
-    <div class="form-group"><label class="form-label">Código de Barras</label><div style="display:flex;gap:6px;"><input class="form-control" id="np-barcode" placeholder="Código del repuesto..."><button class="btn btn-secondary btn-sm" onclick="openScannerFor('np-barcode')">🔲</button></div></div>
+    <div class="form-group"><label class="form-label">Código de Barras</label><div style="display:flex;gap:6px;"><input class="form-control" id="np-barcode" placeholder="Código del repuesto..." onkeydown="bcCorregirTecla(event)" autocomplete="off"><button class="btn btn-secondary btn-sm" onclick="openScannerFor('np-barcode')">🔲</button></div></div>
     <div class="form-group"><label class="form-label">Categoría</label><select class="form-control" id="np-cat"><option>Repuestos Motor</option><option>Frenos</option><option>Llantas</option><option>Aceites y Lubricantes</option><option>Suspensión</option><option>Eléctrico</option><option>Accesorios</option><option>Filtros</option><option>Transmisión</option><option>Otro</option></select></div>
     <div class="form-group"><label class="form-label">Precio Costo ($)</label><input class="form-control" id="np-costo" type="number" min="0" placeholder="0"></div>
     <div class="form-group"><label class="form-label">Precio Venta ($) *</label><input class="form-control" id="np-precio" type="number" min="0" placeholder="0"></div>
@@ -833,7 +833,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <div class="modal"><div class="modal-head"><div class="modal-title">✏️ Editar Producto</div><button class="modal-close" onclick="closeModal('m-edit-prod')">✕</button></div>
   <div class="modal-body"><input type="hidden" id="ep-id"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div class="form-group" style="grid-column:span 2;"><label class="form-label">Nombre *</label><input class="form-control" id="ep-nombre"></div>
-    <div class="form-group"><label class="form-label">Código de Barras</label><div style="display:flex;gap:6px;"><input class="form-control" id="ep-barcode"><button class="btn btn-secondary btn-sm" onclick="openScannerFor('ep-barcode')">🔲</button></div></div>
+    <div class="form-group"><label class="form-label">Código de Barras</label><div style="display:flex;gap:6px;"><input class="form-control" id="ep-barcode" onkeydown="bcCorregirTecla(event)" autocomplete="off"><button class="btn btn-secondary btn-sm" onclick="openScannerFor('ep-barcode')">🔲</button></div></div>
     <div class="form-group"><label class="form-label">Categoría</label><select class="form-control" id="ep-cat"><option>Repuestos Motor</option><option>Frenos</option><option>Llantas</option><option>Aceites y Lubricantes</option><option>Suspensión</option><option>Eléctrico</option><option>Accesorios</option><option>Filtros</option><option>Transmisión</option><option>Otro</option></select></div>
     <div class="form-group"><label class="form-label">Precio Costo ($)</label><input class="form-control" id="ep-costo" type="number" min="0"></div>
     <div class="form-group"><label class="form-label">Precio Venta ($)</label><input class="form-control" id="ep-precio" type="number" min="0"></div>
@@ -1786,9 +1786,31 @@ function renderPosGrid(q){
 
 // BARCODE
 var _bcTimer=null,_bcLastKey=0,_bcTimes=[];
+// Los escáneres de código de barras emulan un teclado en distribución EN-US.
+// Con Windows/teclado en español, los dígitos llegan como símbolos (!"#$%&/()=).
+// e.code identifica la tecla FÍSICA sin importar el idioma, así se recupera el número real.
+function bcTeclaReal(e){
+  var c=e.code||'',m;
+  if((m=c.match(/^Digit(\d)$/))||(m=c.match(/^Numpad(\d)$/)))return m[1];
+  if(m=c.match(/^Key([A-Z])$/))return e.shiftKey?m[1]:m[1].toLowerCase();
+  if(c==='Minus'||c==='NumpadSubtract')return'-';
+  if(c==='Period'||c==='NumpadDecimal')return'.';
+  return null;
+}
+function bcCorregirTecla(e){
+  if(e.ctrlKey||e.altKey||e.metaKey)return;
+  var ch=bcTeclaReal(e);
+  if(ch===null||e.key===ch)return;
+  e.preventDefault();
+  var inp=e.target,s=inp.selectionStart,f=inp.selectionEnd,v=inp.value;
+  inp.value=v.slice(0,s)+ch+v.slice(f);
+  inp.selectionStart=inp.selectionEnd=s+1;
+  inp.dispatchEvent(new Event('input',{bubbles:true}));
+}
 function barcodeKeyDown(e){
   if(e.key==='Enter'){e.preventDefault();clearTimeout(_bcTimer);_bcTimes=[];buscarBarcode();return;}
   var now=Date.now();if(_bcLastKey>0)_bcTimes.push(now-_bcLastKey);_bcLastKey=now;
+  bcCorregirTecla(e);
 }
 function barcodeInput(){
   var val=document.getElementById('barcode-input').value;
