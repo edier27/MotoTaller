@@ -185,9 +185,11 @@ tbody tr:hover{background:var(--surface2);}
 .empty-state-title{font-size:15px;font-weight:700;color:var(--ink2);margin-bottom:5px;}
 
 /* POS */
-.pos-layout{display:grid;grid-template-columns:1fr 370px;gap:14px;}
+.pos-layout{display:grid;grid-template-columns:1fr 430px;gap:14px;}
 .pos-left{display:flex;flex-direction:column;gap:12px;}
-.pos-right{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;position:sticky;top:68px;max-height:calc(100vh - 82px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.pos-right{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;position:sticky;top:68px;max-height:calc(100vh - 82px);overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.pos-right .btn-block{padding:14px 18px;font-size:15px;border-radius:12px;}
+.pos-right .btn-sm.btn-block{padding:12px 16px;font-size:14px;}
 .barcode-wrap{background:#fff;border:2px solid var(--accent);border-radius:var(--r-lg);padding:12px 14px;display:flex;align-items:center;gap:10px;}
 .barcode-wrap input{flex:1;border:none;outline:none;font-size:15px;font-weight:600;font-family:var(--font);color:var(--ink);}
 .barcode-wrap input::placeholder{color:#D1D5DB;font-weight:400;}
@@ -208,31 +210,32 @@ tbody tr:hover{background:var(--surface2);}
 .ppc-stock{font-size:10px;color:#6B7280;}
 
 /* Cart */
-.cart-title{font-size:14px;font-weight:800;color:var(--ink);padding-bottom:10px;border-bottom:1px solid var(--border);}
-.cart-items{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;min-height:60px;}
-.cart-item{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--surface2);border-radius:9px;border:1px solid var(--border);}
-.ci-emoji{font-size:18px;flex-shrink:0;}
-.ci-name{flex:1;font-size:12px;font-weight:600;color:var(--ink);}
-.ci-qty{display:flex;align-items:center;gap:5px;}
-.ci-qty button{width:22px;height:22px;border-radius:5px;border:none;background:#fff;cursor:pointer;font-size:14px;font-weight:700;color:var(--ink2);box-shadow:0 1px 3px rgba(0,0,0,.1);transition:all .12s;}
+.cart-title{font-size:17px;font-weight:800;color:var(--ink);padding-bottom:12px;border-bottom:1px solid var(--border);}
+.cart-items{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;min-height:60px;}
+.cart-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+.ci-emoji{font-size:22px;flex-shrink:0;}
+.ci-name{flex:1;font-size:14px;font-weight:600;color:var(--ink);}
+.ci-qty{display:flex;align-items:center;gap:6px;}
+.ci-qty button{width:28px;height:28px;border-radius:7px;border:none;background:#fff;cursor:pointer;font-size:16px;font-weight:700;color:var(--ink2);box-shadow:0 1px 3px rgba(0,0,0,.1);transition:all .12s;}
 .ci-qty button:hover{background:var(--accent);color:#fff;}
-.ci-qty-n{font-size:12px;font-weight:700;width:20px;text-align:center;}
-.ci-price{font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;}
-.ci-del{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:15px;padding:2px;}
+.ci-qty-n{font-size:14px;font-weight:700;width:24px;text-align:center;}
+.ci-price{font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap;}
+.ci-del{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:17px;padding:3px;}
 .ci-del:hover{color:var(--red);}
-.cart-total-section{padding-top:10px;border-top:1px solid var(--border);}
-.cart-total-row{display:flex;justify-content:space-between;margin-bottom:6px;}
-.cart-total-lbl{font-size:12px;color:var(--ink3);}
-.cart-total-val{font-size:12px;font-weight:700;color:var(--ink);}
-.cart-grand{background:var(--accent-light);border:1.5px solid rgba(232,122,0,.3);border-radius:11px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.cart-grand-lbl{font-size:13px;font-weight:700;color:var(--accent);}
-.cart-grand-val{font-size:20px;font-weight:900;font-family:var(--font-head);color:var(--accent);}
-.cash-row{display:flex;gap:7px;margin-bottom:8px;}
-.cash-row input{flex:1;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:700;font-family:var(--font);outline:none;color:var(--ink);}
+.cart-total-section{padding-top:12px;border-top:1px solid var(--border);}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:8px;}
+.cart-total-lbl{font-size:14px;color:var(--ink3);}
+.cart-total-val{font-size:14px;font-weight:700;color:var(--ink);}
+.cart-grand{background:var(--accent-light);border:1.5px solid rgba(232,122,0,.3);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.cart-grand-lbl{font-size:15px;font-weight:700;color:var(--accent);}
+.cart-grand-val{font-size:27px;font-weight:900;font-family:var(--font-head);color:var(--accent);}
+.cash-row{display:flex;gap:8px;margin-bottom:10px;}
+.cash-row input{flex:1;padding:13px 14px;border:1.5px solid var(--border);border-radius:11px;font-size:17px;font-weight:700;font-family:var(--font);outline:none;color:var(--ink);}
 .cash-row input:focus{border-color:var(--green);}
-.cambio-row{background:var(--green-light);border:1px solid #A7F3D0;border-radius:9px;padding:9px 13px;display:flex;justify-content:space-between;margin-bottom:10px;}
-.cambio-lbl{font-size:12px;color:var(--green);font-weight:600;}
-.cambio-val{font-size:15px;font-weight:800;color:var(--green);font-family:var(--font-head);}
+.cash-row .btn-sm{padding:10px 16px;font-size:13px;}
+.cambio-row{background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;margin-bottom:12px;}
+.cambio-lbl{font-size:14px;color:var(--green);font-weight:600;}
+.cambio-val{font-size:18px;font-weight:800;color:var(--green);font-family:var(--font-head);}
 
 /* INVENTARIO */
 .inv-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
@@ -285,7 +288,7 @@ tbody tr:hover{background:var(--surface2);}
 .pesa-live.show{display:flex;}
 
 /* RESPONSIVE */
-@media(max-width:1100px){.pos-layout{grid-template-columns:1fr 330px;}}
+@media(max-width:1100px){.pos-layout{grid-template-columns:1fr 380px;}}
 @media(max-width:900px){
   .pos-layout{grid-template-columns:1fr;}
   .pos-right{position:static;max-height:none;}
@@ -503,14 +506,14 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
         <!-- CARRITO -->
         <div class="pos-right">
           <div class="cart-title">🛒 Carrito de Compras</div>
-          <div class="cart-items" id="cart-items"><div class="empty-state" style="padding:20px;"><div style="font-size:32px;">🛒</div><div style="font-size:12px;color:var(--ink3);margin-top:6px;">Carrito vacío</div></div></div>
+          <div class="cart-items" id="cart-items"><div class="empty-state" style="padding:20px;"><div style="font-size:38px;">🛒</div><div style="font-size:14px;color:var(--ink3);margin-top:6px;">Carrito vacío</div></div></div>
           <div class="cart-total-section">
             <div class="cart-total-row"><span class="cart-total-lbl">Subtotal</span><span class="cart-total-val" id="cart-sub">$0</span></div>
             <div class="cart-grand"><span class="cart-grand-lbl">TOTAL</span><span class="cart-grand-val" id="cart-total">$0</span></div>
-            <div style="font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">Efectivo recibido</div>
+            <div style="font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;">Efectivo recibido</div>
             <div class="cash-row"><input id="cash-input" type="number" placeholder="$0" oninput="calcCambio()"><button class="btn btn-secondary btn-sm" onclick="setCash()">Exacto</button></div>
             <div class="cambio-row" id="cambio-row" style="display:none;"><span class="cambio-lbl">Cambio</span><span class="cambio-val" id="cambio-val">$0</span></div>
-            <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;flex-direction:column;gap:9px;">
               <button class="btn btn-success btn-block" onclick="abrirPagoEfectivo()">💵 Cobrar Efectivo</button>
               <button class="btn btn-blue btn-block" onclick="cobrar('transferencia')">📲 Transferencia / Nequi</button>
               <button class="btn btn-secondary btn-block" onclick="cobrarFiado()">📋 Cobrar a Fiado</button>
