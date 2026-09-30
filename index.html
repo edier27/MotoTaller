@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GlobalMotos Pro | Taller</title>
+<meta name="description" content="Software de gestión para talleres de motos">
+<meta name="theme-color" content="#16191F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GlobalMotos">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -581,7 +589,6 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
 .cfg-sec-t{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px;}
 .cfg-sec-t .ic{width:16px;height:16px;color:var(--ink3);}
 .cfg-sec-d{font-size:12.5px;color:var(--ink3);line-height:1.5;margin-bottom:10px;}
-.cfg-sec.danger{background:#fff;border-color:var(--red-line);}
 .cfg-row{display:flex;gap:8px;}
 .cfg-row .form-control{flex:1;}
 @media(max-width:767px){
@@ -590,6 +597,14 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   .cp-fields{grid-template-columns:1fr 1fr;width:100%;}
   .cp-fields .form-group:first-child{grid-column:span 2;}
 }
+
+/* Aviso de version nueva */
+.gm-update{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:3000;display:none;align-items:center;gap:12px;max-width:calc(100% - 24px);padding:10px 12px 10px 14px;background:var(--side);color:#fff;border-radius:var(--r-lg);box-shadow:var(--shadow-md);font-size:13px;}
+.gm-update.show{display:flex;}
+.gm-update .ic{width:17px;height:17px;color:#6FA2EA;flex-shrink:0;}
+.gm-update small{display:block;color:var(--side-ink);font-size:11.5px;margin-top:1px;}
+.gm-update .btn{height:32px;}
+.gm-update .gm-up-x{background:none;border:none;color:var(--side-ink);cursor:pointer;padding:4px;display:flex;}
 
 /* ICONOS SVG */
 .ic{width:1em;height:1em;display:inline-block;vertical-align:-.14em;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;overflow:visible;min-width:12px;min-height:12px;}
@@ -1425,12 +1440,6 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
       <div class="cfg-row"><input class="form-control" id="cfg-lic-code" placeholder="Ej: PRO-XXXXX-XXXXX" style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')gmActivarLicencia()"><button class="btn btn-secondary" onclick="gmActivarLicencia()">Activar</button></div>
       <div id="cfg-lic-msg" style="font-size:12px;margin-top:8px;"></div>
     </div>
-
-    <div class="cfg-sec danger">
-      <div class="cfg-sec-t" style="color:var(--red);"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Borrar todos los datos</div>
-      <div class="cfg-sec-d">Elimina productos, ventas, empleados, clientes, fiados, compras, facturas y órdenes en todos los equipos. Descarga un respaldo antes; esta acción no se puede deshacer.</div>
-      <button class="btn btn-secondary" style="color:var(--red);border-color:var(--red-line);" onclick="limpiarSoftware()">Borrar todo y empezar de cero</button>
-    </div>
   </div>
   <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('m-config')">Cancelar</button><button class="btn btn-primary" onclick="guardarConfig()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button></div></div>
 </div>
@@ -1744,6 +1753,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <option value="Bajaj"><option value="Yamaha"><option value="Honda"><option value="Suzuki"><option value="AKT"><option value="Auteco"><option value="Hero"><option value="KTM"><option value="TVS"><option value="Kawasaki"><option value="Victory"><option value="Kymco"><option value="Benelli"><option value="Royal Enfield"><option value="Pulsar">
 </datalist>
 
+<div class="gm-update" id="gm-update" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><div><div>Hay una versión nueva del software</div><small id="gm-update-notas">Actualiza para seguir trabajando con la última versión.</small></div><button class="btn btn-primary btn-sm" onclick="gmActualizar()">Actualizar</button><button class="gm-up-x" onclick="document.getElementById('gm-update').classList.remove('show')" title="Más tarde"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="color:inherit"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
@@ -2273,6 +2283,49 @@ setInterval(function(){
   var pend=false; try{ pend=localStorage.getItem(SK+'_pending')==='1'; }catch(e){}
   if(pend&&navigator.onLine&&_gmListo&&!_gmSubiendo) _gmSubir();
 },60000);
+
+
+// APP INSTALABLE Y ACTUALIZACIONES
+// Se detecta una version nueva comparando la huella (ETag) de index.html en
+// GitHub Pages; no hay que cambiar ningun numero a mano al publicar.
+var GM_VERSION='2.0.0';
+var _gmHuella=null,_gmHayNueva=false;
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('[GM] Service worker:',e); }); });
+}
+function _gmLeerHuella(){
+  return fetch('index.html',{method:'HEAD',cache:'no-store'}).then(function(r){
+    return r.ok?(r.headers.get('etag')||r.headers.get('last-modified')||null):null;
+  }).catch(function(){ return null; });
+}
+function _gmRevisarVersion(){
+  if(!/^https?:$/.test(location.protocol)||!navigator.onLine||_gmHayNueva) return;
+  _gmLeerHuella().then(function(h){
+    if(!h) return;
+    if(!_gmHuella){ _gmHuella=h; return; }
+    if(h===_gmHuella) return;
+    _gmHayNueva=true;
+    fetch('version.json',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).then(function(v){
+      if(v&&v.notas) _st('gm-update-notas',(v.version?'Versión '+v.version+': ':'')+v.notas);
+    }).catch(function(){}).then(function(){
+      // Si no hay nada en curso se actualiza solo; si no, se muestra el aviso
+      var ocupado=(typeof cart!=='undefined'&&cart.length)||document.querySelector('.modal-overlay.open');
+      if(document.visibilityState==='visible'&&!ocupado&&typeof currentUser!=='undefined'&&!currentUser){ gmActualizar(); return; }
+      document.getElementById('gm-update').classList.add('show');
+    });
+  });
+}
+function gmActualizar(){
+  var recargar=function(){ location.reload(); };
+  var pend=false; try{ pend=localStorage.getItem(SK+'_pending')==='1'; }catch(e){}
+  if(pend&&typeof _gmSubir==='function'&&_gmListo&&navigator.onLine){
+    toast('Guardando antes de actualizar...','info');
+    _gmSubir(); setTimeout(recargar,2500);
+  } else recargar();
+}
+setTimeout(_gmRevisarVersion,4000);
+setInterval(_gmRevisarVersion,5*60*1000);
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') _gmRevisarVersion(); });
 
 // AUTH
 // (Login viejo por USERS eliminado - ahora se usa Firebase Auth real.)
@@ -4142,43 +4195,6 @@ function repDescargarPDF(tipo){
 
 
 // LIMPIAR SOFTWARE - BORRAR TODOS LOS DATOS
-function limpiarSoftware(){
-  // Confirmación doble para evitar borrado accidental
-  if(!confirm('ADVERTENCIA\n\n¿Está seguro que desea BORRAR TODOS los datos?\n\nSe eliminarán:\n• Todos los productos\n• Todas las ventas\n• Todos los empleados\n• Todos los clientes\n• Todos los fiados\n• Todos los movimientos\n• Todas las facturas y órdenes de servicio\n\nEsta acción NO se puede deshacer.')) return;
-
-  if(!confirm('ÚLTIMA CONFIRMACIÓN\n\n¿CONFIRMA que desea borrar TODO?\n\nEscriba OK para continuar.') && !confirm('¿Confirma el borrado total?')) return;
-
-  // Guardar solo la configuración del negocio
-  var configGuardada = Object.assign({}, state.config);
-
-  // Resetear todo el state
-  state.products          = [];
-  state.ventas            = [];
-  state.clientes          = [];
-  state.movimientos       = [];
-  state.empleados         = [];
-  state.serviciosEmpleados= [];
-  state.proveedores       = [];
-  state.facturas          = [];
-  state.ordenes           = [];
-  state.facSeq            = 0;
-  state.ordSeq            = 0;
-  state._deleteVersion    = (state._deleteVersion||0) + 1;
-  state._lastModified     = Date.now();
-  // Conservar la configuración del negocio
-  state.config = configGuardada;
-
-  saveState();
-
-  // Cerrar modal y refrescar UI
-  closeModal('m-config');
-  cart = [];
-  refreshAll();
-  renderDashboard();
-
-  toast('Software limpiado - listo para empezar desde cero','success');
-  console.log('[GM] Software reseteado completamente');
-}
 
 
 
