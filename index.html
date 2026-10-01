@@ -1217,7 +1217,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
     <div id="prov-order-info" style="font-size:12px;color:var(--ink3);margin-bottom:12px;"></div>
     <div class="form-group"><label class="form-label">Agregar producto del inventario</label>
       <div style="display:flex;gap:6px;">
-        <input class="form-control" id="prov-pick-q" placeholder="Busca por nombre o por código del proveedor" oninput="provBuscarProd()" autocomplete="off" style="flex:1;min-width:0;">
+        <input class="form-control" id="prov-pick-q" placeholder="Pasa el lector de código de barras, o busca por nombre o código" oninput="provPickInput()" onkeydown="provPickKey(event)" autocomplete="off" style="flex:1;min-width:0;">
         <input class="form-control" id="prov-pick-qty" type="number" min="1" value="1" title="Cantidad" style="width:70px;">
       </div>
       <div id="prov-pick-list" style="margin-top:6px;"></div>
@@ -4149,6 +4149,8 @@ function provAbrirPedido(id){
   document.getElementById('prov-pick-q').value=''; document.getElementById('prov-pick-qty').value=1;
   provBuscarProd();
   openModal('m-prov-order');
+  // listo para pasar el lector sin tocar nada (en celular no, para no abrir el teclado)
+  if(!_gmEsCelular()) setTimeout(function(){ var i=document.getElementById('prov-pick-q'); if(i) i.focus(); },120);
 }
 // Hay proveedores que solo reciben el pedido por su propio codigo (referencia),
 // que no es el codigo de barras: se guarda en el producto como "ref". Si otro
@@ -4217,10 +4219,63 @@ function provAgregarProd(id){
   var p=(state.products||[]).find(function(x){ return x.id===id; }); if(!p) return;
   var qty=Math.max(1,parseInt(document.getElementById('prov-pick-qty').value)||1);
   var fmtP=document.getElementById('prov-pick-fmt').value, ref=_prodCodigo(p,document.getElementById('prov-order-id').value);
-  _provAnexar([_provLinea(p,qty)]);
+  var total=_provSumar(p,qty,ref);
   document.getElementById('prov-pick-q').value=''; document.getElementById('prov-pick-qty').value=1; provBuscarProd();
   document.getElementById('prov-pick-q').focus();
-  if(fmtP!=='nombre'&&!ref) toast('"'+p.nombre+'" no tiene código del proveedor: se agregó por nombre. Ponle el código en Inventario.','warning',6000);
+  if(fmtP!=='nombre'&&!ref&&total===qty) toast('"'+p.nombre+'" no tiene código del proveedor: se agregó por nombre. Ponle el código en Inventario.','warning',6000);
+  else toast(p.nombre+': '+total+' en el pedido','success',1800);
+}
+// Si el producto ya esta en el pedido se le suma la cantidad a su linea en vez
+// de repetirlo (pasar el lector 3 veces = pedir 3). Devuelve la cantidad que queda.
+function _provSumar(p,qty,ref){
+  var ta=document.getElementById('prov-order-text');
+  var iguales=[p.nombre,ref,ref&&(ref+' - '+p.nombre)].filter(Boolean).map(_gmNorm);
+  var lineas=ta.value.split('\n'), total=qty, hecho=false;
+  for(var i=0;i<lineas.length&&!hecho;i++){
+    var m=lineas[i].match(/^(\s*-?\s*)(\d+)(\s*x\s*)(.+?)\s*$/i);
+    if(m&&iguales.indexOf(_gmNorm(m[4]))>=0){ total=parseInt(m[2])+qty; lineas[i]=m[1]+total+m[3]+m[4]; hecho=true; }
+  }
+  if(hecho){ ta.value=lineas.join('\n'); provGuardarBorrador(true); }
+  else _provAnexar([_provLinea(p,qty)]);
+  return total;
+}
+// LECTOR DE CODIGO DE BARRAS EN EL PEDIDO. El lector escribe muy rapido y
+// termina con Enter; si no manda Enter, se agrega solo cuando el codigo coincide.
+var _provScanT=null;
+function _bcSimbolos(v){
+  // respaldo: digitos que llegaron como simbolos (teclado en español)
+  var mapa={'!':'1','"':'2','#':'3','·':'3','$':'4','%':'5','&':'6','/':'7','(':'8',')':'9','=':'0',"'":'-','?':'_'};
+  v=String(v||'').trim();
+  return /^[!"#·$%&\/()=\d]+$/.test(v)?v.replace(/[^\d]/g,function(c){ return mapa[c]||c; }):v;
+}
+function _provPorBarras(v){
+  v=_bcSimbolos(v).toLowerCase(); if(!v) return null;
+  return (state.products||[]).find(function(p){ return String(p.barcode||'').trim().toLowerCase()===v; })||null;
+}
+function provPickKey(e){
+  if(e.key==='Enter'){
+    e.preventDefault(); clearTimeout(_provScanT);
+    var inp=e.target, v=_bcSimbolos(inp.value); if(!v) return;
+    var p=_provPorBarras(v)||_gmPorCodigo(v,'');
+    if(!p){
+      // sin codigo exacto: si la busqueda deja un solo producto, es ese
+      inp.value=v; provBuscarProd();
+      var unico=document.querySelectorAll('#prov-pick-list [onclick]');
+      if(unico.length===1){ unico[0].click(); return; }
+      toast(unico.length?'Hay varios productos parecidos: toca el que necesitas':'No hay ningún producto con el código '+v,'warning',4000);
+      if(!unico.length){ inp.value=''; provBuscarProd(); }
+      return;
+    }
+    provAgregarProd(p.id);
+    return;
+  }
+  bcCorregirTecla(e);
+}
+function provPickInput(){
+  provBuscarProd();
+  clearTimeout(_provScanT);
+  var v=_bcSimbolos(document.getElementById('prov-pick-q').value);
+  if(/^\d{6,}$/.test(v)&&_provPorBarras(v)) _provScanT=setTimeout(function(){ var p=_provPorBarras(document.getElementById('prov-pick-q').value); if(p) provAgregarProd(p.id); },250);
 }
 function provCambiarFormato(){
   var id=document.getElementById('prov-order-id').value;
