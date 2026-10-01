@@ -1,4 +1,4 @@
 {
-  "version": "2.0.0",
-  "notas": "Nuevo diseño, caja POS renovada, carga de facturas con foto, Google Drive y guardado en la nube mejorado."
+  "version": "2.1.0",
+  "notas": "Panel con flujo de caja, ganancia real en Reportes, cierre de caja, cuentas por pagar a proveedores, pedidos por código, recordatorios de mantenimiento e historial por moto."
 }
