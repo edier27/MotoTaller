@@ -165,6 +165,39 @@ textarea.form-control{height:auto;min-height:74px;padding:9px 11px;resize:vertic
 .stat-label{font-size:12px;font-weight:500;color:var(--ink3);margin-bottom:8px;padding-right:36px;}
 .stat-value{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.3px;}
 .stat-sub{font-size:12px;color:var(--ink3);margin-top:2px;}
+/* Panel: indicadores del mes y flujo de caja */
+.dash-chips{display:inline-flex;gap:8px;flex-wrap:wrap;}
+.dash-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid;cursor:pointer;font-family:var(--font);}
+.dash-chip .ic{width:14px;height:14px;}
+.dash-chip.warn{background:var(--yellow-light);color:var(--yellow);border-color:#F1D9A8;}
+.dash-chip.ok{background:var(--green-light);color:var(--green);border-color:#BFE0CD;}
+.dash-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:16px 0;}
+.dash-kpi{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;}
+.dash-kpi-lbl{font-size:12.5px;font-weight:500;color:var(--ink2);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.dash-kpi-lbl .ic{width:15px;height:15px;}
+.dash-kpi-val{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.3px;font-variant-numeric:tabular-nums;}
+.dash-delta{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+.dash-delta em{font-style:normal;font-weight:500;opacity:.85;}
+.dash-delta.up{background:var(--green-light);color:var(--green);}
+.dash-delta.down{background:var(--red-light);color:var(--red);}
+.dash-delta.flat{background:var(--surface3);color:var(--ink3);}
+.dash-kpi svg.dash-spark{flex:0 0 110px;width:110px;height:40px;}
+.dash-flujo{padding:16px;margin-bottom:16px;overflow:visible;}
+.dash-flujo-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.dash-flujo-sub{font-size:12.5px;color:var(--ink3);margin-top:3px;}
+.dash-rng{display:inline-flex;gap:4px;}
+.dash-rng button{border:none;background:none;padding:5px 10px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--ink3);cursor:pointer;font-family:var(--font);}
+.dash-rng button.on{background:var(--accent);color:#fff;}
+.dash-flujo-plot{position:relative;}
+.dash-flujo-plot svg{display:block;width:100%;height:240px;touch-action:pan-y;}
+.dash-tip{position:absolute;top:6px;pointer-events:none;background:#fff;border:1px solid var(--border-strong);border-radius:8px;box-shadow:var(--shadow-md);padding:8px 10px;font-size:12px;color:var(--ink2);min-width:150px;z-index:2;display:none;}
+.dash-tip b{display:block;color:var(--ink);margin-bottom:4px;}
+.dash-tip div{display:flex;justify-content:space-between;gap:14px;font-variant-numeric:tabular-nums;}
+.dash-tip div strong{color:var(--ink);}
+.dash-leg{display:flex;gap:16px;font-size:12.5px;color:var(--ink2);margin-top:6px;}
+.dash-leg span{display:inline-flex;align-items:center;gap:6px;}
+.dash-leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--green);}
+.dash-leg i.dash-leg-egr{border-top:2px dashed var(--red);}
 .stat-card.s-green .stat-icon{background:var(--green-light);color:var(--green);}
 .stat-card.s-red .stat-icon{background:var(--red-light);color:var(--red);}
 .stat-card.s-blue .stat-icon{background:var(--blue-light);color:var(--blue);}
@@ -740,10 +773,19 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
     <div class="page active" id="page-dashboard">
       <div class="page-header">
         <div><div class="page-title">Panel de Control</div><div class="page-sub" id="fecha-hoy"></div></div>
-        <div class="header-actions"><button class="btn btn-secondary btn-sm" onclick="exportarDatos()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Respaldo</button></div>
+        <div class="header-actions"><span id="dash-chips" class="dash-chips"></span><button class="btn btn-secondary btn-sm" onclick="exportarDatos()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Respaldo</button></div>
       </div>
       <div class="stats-grid" id="dash-stats"></div>
       <div class="cash-card" id="dash-caja-detalle"></div>
+      <div class="dash-kpis" id="dash-kpis"></div>
+      <div class="card dash-flujo">
+        <div class="dash-flujo-head">
+          <div><div class="card-head-title">Flujo de caja</div><div class="dash-flujo-sub" id="dash-flujo-sub"></div></div>
+          <div class="dash-rng" id="dash-rng"></div>
+        </div>
+        <div class="dash-flujo-plot" id="dash-flujo-plot"></div>
+        <div class="dash-leg"><span><i class="dash-leg-ing"></i>Ingresos</span><span><i class="dash-leg-egr"></i>Egresos</span></div>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div class="card"><div class="card-head"><div class="card-head-ic" style="background:var(--accent-light);"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div><div><div class="card-head-title">Ventas de Hoy</div></div></div><div class="card-body" id="dash-ventas-hoy"></div></div>
@@ -1899,7 +1941,9 @@ var GM_IC={
   "wrench":'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
   "x":'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   "x-circle":'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
-  "zap":'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'
+  "zap":'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  "trending-up":'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  "alert-triangle":'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
 };
 function ic(n,cls){
   var p=GM_IC[n]||GM_IC['dot'];
@@ -2631,7 +2675,147 @@ function initApp(){
 }
 
 // DASHBOARD
+// Indicadores del mes y flujo de caja. Ingresos: ventas cobradas (no fiadas),
+// la parte del taller en servicios, entradas de caja y abonos de fiados.
+// Egresos: gastos y pagos a empleados.
+var _dashRango=30,_dashMeses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function _dashFecha(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _dashPorDia(){
+  var m={}, g=function(f){ var k=String(f||'').slice(0,10); return m[k]||(m[k]={ing:0,egr:0,vt:0,vn:0,ord:0}); };
+  (state.ventas||[]).forEach(function(v){
+    if(!v.fecha) return; var x=g(v.fecha), t=Number(v.total)||0;
+    if(v.tipo==='pago_empleado'){ x.egr+=t; return; }
+    x.vt+=t; x.vn++;
+    if(v.tipo!=='fiado') x.ing+=t;
+  });
+  (state.serviciosEmpleados||[]).forEach(function(s){ if(s.fecha) g(s.fecha).ing+=Number(s.empresa)||0; });
+  (state.movimientos||[]).forEach(function(mv){
+    if(!mv.fecha) return; var val=Number(mv.valor)||0;
+    if(mv.tipo==='entrada'||mv.tipo==='abono') g(mv.fecha).ing+=val;
+    else if(mv.tipo==='gasto') g(mv.fecha).egr+=val;
+  });
+  (state.ordenes||[]).forEach(function(o){
+    if(o.estado!=='terminada'&&o.estado!=='entregada') return;
+    var f=o.fEntrega||o.fIngreso||o.creada; if(f) g(f).ord++;
+  });
+  return m;
+}
+function _dashSerie(m,dias){
+  var out=[], d=colombiaDate(); d.setHours(12,0,0,0); d.setDate(d.getDate()-(dias-1));
+  for(var i=0;i<dias;i++){ var k=_dashFecha(d); out.push(Object.assign({k:k,dia:d.getDate(),mes:d.getMonth()},m[k]||{ing:0,egr:0,vt:0,vn:0,ord:0})); d.setDate(d.getDate()+1); }
+  return out;
+}
+function _dashCorto(n){
+  n=Number(n)||0; var a=Math.abs(n);
+  if(a>=1e6) return (n/1e6).toFixed(a>=1e7?0:1).replace('.0','')+'M';
+  if(a>=1e3) return Math.round(n/1e3)+'k';
+  return String(Math.round(n));
+}
+function _dashSpark(vals,color){
+  var w=110,h=40,max=Math.max.apply(null,vals.concat([1])),n=vals.length;
+  var pts=vals.map(function(v,i){ return (i*(w-4)/(n-1)+2).toFixed(1)+','+(h-4-(v/max)*(h-8)).toFixed(1); });
+  return '<svg class="dash-spark" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><polygon points="2,'+(h-4)+' '+pts.join(' ')+' '+(w-2)+','+(h-4)+'" fill="'+color+'" opacity=".12"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+}
+function _dashDelta(act,ant){
+  if(!ant) return '<span class="dash-delta flat">'+(act?'Sin datos del mes anterior':'Sin movimiento')+'</span>';
+  var p=Math.round((act-ant)/ant*100), cls=p>0?'up':(p<0?'down':'flat');
+  var fl=p>0?'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:12px;height:12px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>':(p<0?'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:12px;height:12px;"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>':'');
+  return '<span class="dash-delta '+cls+'" title="Comparado con los mismos días del mes anterior">'+fl+(p>0?'+':'')+p+'% <em>vs mes anterior</em></span>';
+}
+function dashRango(n){ _dashRango=n; _dashExtra(); }
+function dashIr(a){
+  if(a==='stock'){ goPage('inventario',document.getElementById('snav-inventario')); setInvFilter('bajo',document.querySelectorAll('#page-inventario .filter-btn')[1]); }
+  else goPage('ordenes',document.getElementById('snav-ordenes'));
+}
+function _dashExtra(){
+  var m=_dashPorDia(), hoyD=colombiaDate(), dia=hoyD.getDate();
+  // Mes en curso contra los mismos dias del mes anterior
+  var suma=function(anio,mes,hasta){
+    var r={ing:0,vt:0,vn:0,ord:0}, pre=anio+'-'+String(mes+1).padStart(2,'0')+'-';
+    for(var d=1;d<=hasta;d++){ var x=m[pre+String(d).padStart(2,'0')]; if(x){ r.ing+=x.ing; r.vt+=x.vt; r.vn+=x.vn; r.ord+=x.ord; } }
+    return r;
+  };
+  var act=suma(hoyD.getFullYear(),hoyD.getMonth(),dia);
+  var pa=new Date(hoyD.getFullYear(),hoyD.getMonth()-1,1);
+  var ant=suma(pa.getFullYear(),pa.getMonth(),dia);
+  var tk=function(r){ return r.vn?Math.round(r.vt/r.vn):0; };
+  var s30=_dashSerie(m,30);
+  var kp=document.getElementById('dash-kpis');
+  if(kp){
+    var card=function(icono,lbl,val,delta,vals,color){
+      return '<div class="dash-kpi"><div><div class="dash-kpi-lbl">'+ic(icono)+' '+lbl+'</div><div class="dash-kpi-val">'+val+'</div>'+delta+'</div>'+_dashSpark(vals,color)+'</div>';
+    };
+    kp.innerHTML=
+      card('trending-up','Ingresos del mes',fmt(act.ing),_dashDelta(act.ing,ant.ing),s30.map(function(x){return x.ing;}),'#D4600F')
+      +card('check-circle','Órdenes completadas',act.ord,_dashDelta(act.ord,ant.ord),s30.map(function(x){return x.ord;}),'#157A45')
+      +card('wallet','Ticket promedio',fmt(tk(act)),_dashDelta(tk(act),tk(ant)),s30.map(function(x){return x.vn?x.vt/x.vn:0;}),'#1F5FBF');
+  }
+  var ch=document.getElementById('dash-chips');
+  if(ch){
+    var bajo=(state.products||[]).filter(function(p){return p.stock<=(p.stockMin||5)&&p.stock>0;}).length;
+    var listas=(state.ordenes||[]).filter(function(o){return o.estado==='terminada';}).length;
+    ch.innerHTML=(bajo?'<button class="dash-chip warn" onclick="dashIr(\'stock\')">'+ic('alert-triangle')+' '+bajo+' bajo stock</button>':'')
+      +(listas?'<button class="dash-chip ok" onclick="dashIr(\'ordenes\')">'+ic('check-circle')+' '+listas+(listas===1?' lista':' listas')+' para entregar</button>':'');
+  }
+  var rg=document.getElementById('dash-rng');
+  if(rg) rg.innerHTML=[7,14,30,90].map(function(n){ return '<button class="'+(n===_dashRango?'on':'')+'" onclick="dashRango('+n+')">'+n+' d</button>'; }).join('');
+  _dashFlujo(_dashSerie(m,_dashRango));
+}
+function _dashFlujo(s){
+  var box=document.getElementById('dash-flujo-plot'); if(!box) return;
+  var ti=s.reduce(function(a,x){return a+x.ing;},0), te=s.reduce(function(a,x){return a+x.egr;},0);
+  document.getElementById('dash-flujo-sub').textContent=fmt(ti)+' ingresos · '+fmt(te)+' egresos · '+(ti-te<0?'-':'')+fmt(Math.abs(ti-te))+' neto';
+  var W=Math.max(320,box.clientWidth||700),H=240,L=46,R=14,T=12,B=26,n=s.length;
+  var max=Math.max.apply(null,s.map(function(x){return Math.max(x.ing,x.egr);}).concat([1]));
+  // tope "redondo" del eje
+  var pot=Math.pow(10,Math.floor(Math.log(max)/Math.LN10)), paso=[1,2,2.5,5,10].map(function(f){return f*pot;}).filter(function(p){return max/p<=4;})[0]||pot*10;
+  var tope=Math.ceil(max/paso)*paso;
+  var X=function(i){ return L+i*(W-L-R)/(n-1); }, Y=function(v){ return T+(1-v/tope)*(H-T-B); };
+  var g='';
+  for(var v=0;v<=tope+1e-6;v+=paso){
+    g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#E2E5E9" stroke-width="1"'+(v?' stroke-dasharray="3 4"':'')+'/>'
+      +'<text x="'+(L-8)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="11" fill="#6A717C">'+_dashCorto(v)+'</text>';
+  }
+  var cada=Math.max(1,Math.ceil(n/Math.max(2,Math.floor((W-L-R)/80))));
+  for(var i=n-1;i>=0;i-=cada){
+    g+='<text x="'+X(i)+'" y="'+(H-7)+'" text-anchor="'+(i===n-1?'end':'middle')+'" font-size="11" fill="#6A717C">'+s[i].dia+' '+_dashMeses[s[i].mes]+'</text>';
+  }
+  var linea=function(k){ return s.map(function(x,i){ return X(i).toFixed(1)+','+Y(x[k]).toFixed(1); }).join(' '); };
+  g+='<polygon points="'+L+','+Y(0)+' '+linea('ing')+' '+(W-R)+','+Y(0)+'" fill="#157A45" opacity=".12"/>'
+    +'<polyline points="'+linea('ing')+'" fill="none" stroke="#157A45" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'<polyline points="'+linea('egr')+'" fill="none" stroke="#C0322B" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round"/>'
+    +'<g id="dash-cur" style="display:none;"><line y1="'+T+'" y2="'+Y(0)+'" stroke="#9AA1AC" stroke-width="1"/><circle r="4.5" fill="#157A45" stroke="#fff" stroke-width="2"/><circle r="4.5" fill="#C0322B" stroke="#fff" stroke-width="2"/></g>';
+  box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Ingresos y egresos por día de los últimos '+n+' días">'+g+'</svg><div class="dash-tip"></div>';
+  var svg=box.querySelector('svg'), cur=svg.querySelector('#dash-cur'), tip=box.querySelector('.dash-tip');
+  var mover=function(e){
+    var r=svg.getBoundingClientRect(), px=(e.clientX-r.left)*W/r.width;
+    var i=Math.max(0,Math.min(n-1,Math.round((px-L)/((W-L-R)/(n-1))))), x=s[i];
+    cur.style.display='';
+    cur.children[0].setAttribute('x1',X(i)); cur.children[0].setAttribute('x2',X(i));
+    cur.children[1].setAttribute('cx',X(i)); cur.children[1].setAttribute('cy',Y(x.ing));
+    cur.children[2].setAttribute('cx',X(i)); cur.children[2].setAttribute('cy',Y(x.egr));
+    var neto=x.ing-x.egr;
+    tip.innerHTML='<b>'+x.dia+' de '+_dashMeses[x.mes]+'</b><div><span>Ingresos</span><strong>'+fmt(x.ing)+'</strong></div><div><span>Egresos</span><strong>'+fmt(x.egr)+'</strong></div><div><span>Neto</span><strong>'+(neto<0?'-':'')+fmt(Math.abs(neto))+'</strong></div>';
+    tip.style.display='block';
+    var cx=X(i)*r.width/W, tw=tip.offsetWidth;
+    tip.style.left=Math.max(0,Math.min(r.width-tw,cx>r.width/2?cx-tw-12:cx+12))+'px';
+  };
+  svg.addEventListener('pointermove',mover); svg.addEventListener('pointerdown',mover);
+  svg.addEventListener('pointerleave',function(){ cur.style.display='none'; tip.style.display='none'; });
+}
+// La grafica se dibuja al ancho real de la tarjeta: se redibuja cuando cambia
+// (girar el celular, abrir el panel despues de estar en otra pagina).
+var _dashResizeT=null,_dashAncho=0;
+window.addEventListener('load',function(){
+  var box=document.getElementById('dash-flujo-plot'); if(!box||!window.ResizeObserver) return;
+  new ResizeObserver(function(){
+    var w=box.clientWidth; if(!w||w===_dashAncho) return; _dashAncho=w;
+    clearTimeout(_dashResizeT); _dashResizeT=setTimeout(function(){ try{ _dashExtra(); }catch(e){} },120);
+  }).observe(box);
+});
+
 function renderDashboard(){
+  try{ _dashExtra(); }catch(e){ console.warn('[GM] Panel:',e); }
   var hoy=today();
   var vh=(state.ventas||[]).filter(function(v){return v.fecha&&v.fecha.startsWith(hoy);});
   var tv=vh.reduce(function(s,v){return s+(v.total||0);},0);
