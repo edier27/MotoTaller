@@ -1168,6 +1168,20 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <div class="modal"><div class="modal-head"><div class="modal-title" id="prov-order-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Hacer Pedido</div><button class="modal-close" onclick="provCerrarPedido()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="modal-body"><input type="hidden" id="prov-order-id">
     <div id="prov-order-info" style="font-size:12px;color:var(--ink3);margin-bottom:12px;"></div>
+    <div class="form-group"><label class="form-label">Agregar producto del inventario</label>
+      <div style="display:flex;gap:6px;">
+        <input class="form-control" id="prov-pick-q" placeholder="Busca por nombre o por código del proveedor" oninput="provBuscarProd()" autocomplete="off" style="flex:1;min-width:0;">
+        <input class="form-control" id="prov-pick-qty" type="number" min="1" value="1" title="Cantidad" style="width:70px;">
+      </div>
+      <div id="prov-pick-list" style="margin-top:6px;"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--ink3);"><span>Pedir por:</span>
+        <select class="form-control" id="prov-pick-fmt" onchange="provCambiarFormato()" style="flex:1;">
+          <option value="ambos">Código y nombre</option>
+          <option value="codigo">Solo código del proveedor</option>
+          <option value="nombre">Solo nombre</option>
+        </select>
+      </div>
+    </div>
     <div class="form-group"><label class="form-label">¿Qué necesitas pedir?</label><textarea class="form-control" id="prov-order-text" rows="5" oninput="provGuardarBorrador()" onchange="provGuardarBorrador(true)" placeholder="Ej:&#10;- 4 pastillas de freno Honda CB&#10;- 2 litros aceite 20W50&#10;- 1 kit de arrastre"></textarea>
       <div style="font-size:11px;color:var(--ink3);margin-top:5px;">Lo que escribes queda guardado hasta que lo envíes, aunque cierres esta ventana.</div></div>
   </div>
@@ -1178,6 +1192,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <div class="modal"><div class="modal-head"><div class="modal-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg> Nuevo Producto</div><button class="modal-close" onclick="closeModal('m-add-prod')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="modal-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div class="form-group" style="grid-column:span 2;"><label class="form-label">Nombre *</label><input class="form-control" id="np-nombre" placeholder="Ej: Aceite 20W50, Pastilla freno..."></div>
+    <div class="form-group"><label class="form-label">Código del proveedor (referencia)</label><input class="form-control" id="np-ref" placeholder="El código con el que el proveedor lo vende. Ej: AK-4521" autocomplete="off"></div>
     <div class="form-group"><label class="form-label">Código de Barras</label><div style="display:flex;gap:6px;"><input class="form-control" id="np-barcode" placeholder="Código del repuesto..." onkeydown="bcCorregirTecla(event)" autocomplete="off"><button class="btn btn-secondary btn-sm" onclick="openScannerFor('np-barcode')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg></button></div></div>
     <div class="form-group"><label class="form-label">Categoría</label><select class="form-control" id="np-cat"><option>Repuestos Motor</option><option>Frenos</option><option>Llantas</option><option>Aceites y Lubricantes</option><option>Suspensión</option><option>Eléctrico</option><option>Accesorios</option><option>Filtros</option><option>Transmisión</option><option>Otro</option></select></div>
     <div class="form-group"><label class="form-label">Precio Costo ($)</label><input class="form-control" id="np-costo" type="number" min="0" placeholder="0"></div>
@@ -1194,6 +1209,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
   <div class="modal"><div class="modal-head"><div class="modal-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg> Editar Producto</div><button class="modal-close" onclick="closeModal('m-edit-prod')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="modal-body"><input type="hidden" id="ep-id"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <div class="form-group" style="grid-column:span 2;"><label class="form-label">Nombre *</label><input class="form-control" id="ep-nombre"></div>
+    <div class="form-group"><label class="form-label">Código del proveedor (referencia)</label><input class="form-control" id="ep-ref" placeholder="El código con el que el proveedor lo vende. Ej: AK-4521" autocomplete="off"></div>
     <div class="form-group"><label class="form-label">Código de Barras</label><div style="display:flex;gap:6px;"><input class="form-control" id="ep-barcode" onkeydown="bcCorregirTecla(event)" autocomplete="off"><button class="btn btn-secondary btn-sm" onclick="openScannerFor('ep-barcode')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg></button></div></div>
     <div class="form-group"><label class="form-label">Categoría</label><select class="form-control" id="ep-cat"><option>Repuestos Motor</option><option>Frenos</option><option>Llantas</option><option>Aceites y Lubricantes</option><option>Suspensión</option><option>Eléctrico</option><option>Accesorios</option><option>Filtros</option><option>Transmisión</option><option>Otro</option></select></div>
     <div class="form-group"><label class="form-label">Precio Costo ($)</label><input class="form-control" id="ep-costo" type="number" min="0"></div>
@@ -3016,7 +3032,7 @@ function llenarSelectPesa(){
 function renderInventario(){
   var q=(document.getElementById('inv-search')||{value:''}).value.toLowerCase();
   var prods=(state.products||[]).filter(function(p){
-    var mq=!q||p.nombre.toLowerCase().includes(q)||(p.barcode||'').includes(q)||(p.categoria||'').toLowerCase().includes(q);
+    var mq=!q||p.nombre.toLowerCase().includes(q)||(p.barcode||'').includes(q)||String(p.ref||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q);
     var mf=_invFilter==='todos'||(_invFilter==='bajo'&&p.stock<=(p.stockMin||5)&&p.stock>0)||(_invFilter==='agotado'&&p.stock<=0);
     return mq&&mf;
   });
@@ -3027,24 +3043,24 @@ function renderInventario(){
   el.innerHTML=prods.map(function(p){
     var sc=p.stock<=0?'stock-out':(p.stock<=(p.stockMin||5)?'stock-low':'stock-ok');
     var st=p.stock<=0?'Agotado':(p.stock<=(p.stockMin||5)?'Bajo: '+p.stock:'Stock: '+p.stock);
-    return'<div class="prod-card" onclick="editarProducto(\''+p.id+'\')"><div class="prod-card-img">'+ic(_prodIcono(p))+'</div><div class="prod-card-body"><div class="prod-card-name">'+p.nombre+'</div><div class="prod-card-bc">'+((p.barcode)?'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg> '+p.barcode:'Sin código')+'</div><div class="prod-card-footer"><span class="prod-card-price">'+fmt(p.precio)+'</span><span class="'+sc+'">'+st+'</span></div></div></div>';
+    return'<div class="prod-card" onclick="editarProducto(\''+p.id+'\')"><div class="prod-card-img">'+ic(_prodIcono(p))+'</div><div class="prod-card-body"><div class="prod-card-name">'+p.nombre+'</div><div class="prod-card-bc">'+((p.barcode)?'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg> '+p.barcode:(p.ref?'Ref: '+_gmEsc(p.ref):'Sin código'))+'</div><div class="prod-card-footer"><span class="prod-card-price">'+fmt(p.precio)+'</span><span class="'+sc+'">'+st+'</span></div></div></div>';
   }).join('');
 }
 function setInvFilter(f,btn){_invFilter=f;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');renderInventario();}
 function guardarProducto(){
   var n=document.getElementById('np-nombre').value.trim();if(!n){toast('El nombre es obligatorio','warning');return;}
-  var p={id:uid(),nombre:_gmClean(n),barcode:_gmClean(document.getElementById('np-barcode').value.trim()),categoria:_gmClean(document.getElementById('np-cat').value),costo:parseFloat(document.getElementById('np-costo').value)||0,precio:parseFloat(document.getElementById('np-precio').value)||0,stock:parseInt(document.getElementById('np-stock').value)||0,stockMin:parseInt(document.getElementById('np-stockmin').value)||5,unidad:document.getElementById('np-unidad').value,icono:document.getElementById('np-icono').value||'package',fechaCreacion:today()};
+  var p={id:uid(),nombre:_gmClean(n),barcode:_gmClean(document.getElementById('np-barcode').value.trim()),ref:_gmClean(document.getElementById('np-ref').value.trim()),categoria:_gmClean(document.getElementById('np-cat').value),costo:parseFloat(document.getElementById('np-costo').value)||0,precio:parseFloat(document.getElementById('np-precio').value)||0,stock:parseInt(document.getElementById('np-stock').value)||0,stockMin:parseInt(document.getElementById('np-stockmin').value)||5,unidad:document.getElementById('np-unidad').value,icono:document.getElementById('np-icono').value||'package',fechaCreacion:today()};
   state.products.push(p);saveState();renderInventario();renderPosGrid();renderDashboard();llenarSelectPesa();closeModal('m-add-prod');toast('Producto agregado','success');
-  ['np-nombre','np-barcode','np-costo','np-precio','np-stock','np-stockmin'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('np-icono').value='package';
+  ['np-nombre','np-barcode','np-ref','np-costo','np-precio','np-stock','np-stockmin'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('np-icono').value='package';
 }
 function editarProducto(id){
   var p=(state.products||[]).find(function(x){return x.id===id;});if(!p)return;
-  document.getElementById('ep-id').value=id;document.getElementById('ep-nombre').value=p.nombre;document.getElementById('ep-barcode').value=p.barcode||'';document.getElementById('ep-cat').value=p.categoria||'Repuestos Motor';document.getElementById('ep-costo').value=p.costo||0;document.getElementById('ep-precio').value=p.precio||0;document.getElementById('ep-stock').value=p.stock||0;document.getElementById('ep-stockmin').value=p.stockMin||5;document.getElementById('ep-unidad').value=p.unidad||'Unidad';document.getElementById('ep-icono').value=_prodIcono(p);
+  document.getElementById('ep-id').value=id;document.getElementById('ep-nombre').value=p.nombre;document.getElementById('ep-barcode').value=p.barcode||'';document.getElementById('ep-ref').value=p.ref||'';document.getElementById('ep-cat').value=p.categoria||'Repuestos Motor';document.getElementById('ep-costo').value=p.costo||0;document.getElementById('ep-precio').value=p.precio||0;document.getElementById('ep-stock').value=p.stock||0;document.getElementById('ep-stockmin').value=p.stockMin||5;document.getElementById('ep-unidad').value=p.unidad||'Unidad';document.getElementById('ep-icono').value=_prodIcono(p);
   openModal('m-edit-prod');
 }
 function actualizarProducto(){
   var id=document.getElementById('ep-id').value;var p=(state.products||[]).find(function(x){return x.id===id;});if(!p)return;
-  p.nombre=_gmClean(document.getElementById('ep-nombre').value.trim());p.barcode=_gmClean(document.getElementById('ep-barcode').value.trim());p.categoria=_gmClean(document.getElementById('ep-cat').value);p.costo=parseFloat(document.getElementById('ep-costo').value)||0;p.precio=parseFloat(document.getElementById('ep-precio').value)||0;p.stock=parseInt(document.getElementById('ep-stock').value)||0;p.stockMin=parseInt(document.getElementById('ep-stockmin').value)||5;p.unidad=document.getElementById('ep-unidad').value;p.icono=document.getElementById('ep-icono').value||'package';
+  p.nombre=_gmClean(document.getElementById('ep-nombre').value.trim());p.barcode=_gmClean(document.getElementById('ep-barcode').value.trim());p.ref=_gmClean(document.getElementById('ep-ref').value.trim());p.categoria=_gmClean(document.getElementById('ep-cat').value);p.costo=parseFloat(document.getElementById('ep-costo').value)||0;p.precio=parseFloat(document.getElementById('ep-precio').value)||0;p.stock=parseInt(document.getElementById('ep-stock').value)||0;p.stockMin=parseInt(document.getElementById('ep-stockmin').value)||5;p.unidad=document.getElementById('ep-unidad').value;p.icono=document.getElementById('ep-icono').value||'package';
   saveState();renderInventario();renderPosGrid();renderDashboard();llenarSelectPesa();closeModal('m-edit-prod');toast('Producto actualizado','success');
 }
 function eliminarProducto(){
@@ -3862,7 +3878,44 @@ function provAbrirPedido(id){
   }
   document.getElementById('prov-order-info').innerHTML=info;
   document.getElementById('prov-order-text').value=prov.pedidoBorrador||'';
+  document.getElementById('prov-pick-fmt').value=prov.pedidoFormato||'ambos';
+  document.getElementById('prov-pick-q').value=''; document.getElementById('prov-pick-qty').value=1;
+  provBuscarProd();
   openModal('m-prov-order');
+}
+// Hay proveedores que solo reciben el pedido por su propio codigo (referencia),
+// que no es el codigo de barras: se guarda en el producto como "ref".
+function provBuscarProd(){
+  var q=_gmNorm(document.getElementById('prov-pick-q').value), box=document.getElementById('prov-pick-list');
+  if(!q){ box.innerHTML=''; return; }
+  var lista=(state.products||[]).filter(function(p){
+    return _gmNorm(p.nombre).indexOf(q)>=0||_gmNorm(p.ref).replace(/ /g,'').indexOf(q.replace(/ /g,''))>=0||String(p.barcode||'').toLowerCase().indexOf(q)>=0;
+  }).slice(0,6);
+  if(!lista.length){ box.innerHTML='<div style="font-size:12px;color:var(--ink3);padding:6px 2px;">Ningún producto del inventario coincide.</div>'; return; }
+  box.innerHTML=lista.map(function(p){
+    return '<div onclick="provAgregarProd(\''+_gmEsc(p.id)+'\')" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:4px;cursor:pointer;background:var(--surface2);">'
+      +'<div style="min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--ink);">'+_gmEsc(p.nombre)+'</div>'
+      +'<div style="font-size:11px;color:var(--ink3);">'+(p.ref?'Código: <span style="font-family:monospace;">'+_gmEsc(p.ref)+'</span>':'Sin código del proveedor')+' · Stock: '+(Number(p.stock)||0)+'</div></div>'
+      +'<span style="font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap;">+ Agregar</span></div>';
+  }).join('');
+}
+function provAgregarProd(id){
+  var p=(state.products||[]).find(function(x){ return x.id===id; }); if(!p) return;
+  var qty=Math.max(1,parseInt(document.getElementById('prov-pick-qty').value)||1);
+  var fmtP=document.getElementById('prov-pick-fmt').value, ref=String(p.ref||'').trim();
+  var desc=(fmtP==='nombre'||!ref)?p.nombre:(fmtP==='codigo'?ref:ref+' - '+p.nombre);
+  var ta=document.getElementById('prov-order-text');
+  ta.value=(ta.value&&!/\n$/.test(ta.value)?ta.value+'\n':ta.value)+'- '+qty+' x '+desc+'\n';
+  provGuardarBorrador(true);
+  document.getElementById('prov-pick-q').value=''; document.getElementById('prov-pick-qty').value=1; provBuscarProd();
+  document.getElementById('prov-pick-q').focus();
+  if(fmtP!=='nombre'&&!ref) toast('"'+p.nombre+'" no tiene código del proveedor: se agregó por nombre. Ponle el código en Inventario.','warning',6000);
+}
+function provCambiarFormato(){
+  var id=document.getElementById('prov-order-id').value;
+  var prov=(state.proveedores||[]).find(function(p){ return p.id===id; }); if(!prov) return;
+  prov.pedidoFormato=document.getElementById('prov-pick-fmt').value;
+  saveState();
 }
 // Lo que se escribe en el pedido queda guardado en el proveedor: no se pierde
 // al cerrar la ventana ni el software, y se ve en los demas equipos.
@@ -4330,7 +4383,7 @@ function _gmNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace
 function _gmBuscarProducto(nombre,codigo){
   var prods=state.products||[];
   var c=String(codigo||'').trim().toLowerCase();
-  if(c){ var porCod=prods.find(function(p){ return String(p.barcode||'').trim().toLowerCase()===c; }); if(porCod) return porCod; }
+  if(c){ var porCod=prods.find(function(p){ return String(p.ref||'').trim().toLowerCase()===c||String(p.barcode||'').trim().toLowerCase()===c; }); if(porCod) return porCod; }
   var n=_gmNorm(nombre); if(n.length<3) return null;
   var exacto=null,parcial=null;
   prods.forEach(function(p){
@@ -4379,7 +4432,7 @@ function _gmBuscarParecido(n,prods){
 function _gmProductoIgual(nombre,codigo){
   var c=String(codigo||'').trim().toLowerCase(), n=_gmNorm(nombre);
   return (state.products||[]).find(function(p){
-    return (c&&String(p.barcode||'').trim().toLowerCase()===c)||(n.length>=3&&_gmNorm(p.nombre)===n);
+    return (c&&(String(p.ref||'').trim().toLowerCase()===c||String(p.barcode||'').trim().toLowerCase()===c))||(n.length>=3&&_gmNorm(p.nombre)===n);
   })||null;
 }
 function _gmAdivinarCategoria(n){
@@ -4761,9 +4814,10 @@ function cpConfirmar(){
       p.stock=(Number(p.stock)||0)+l.qty;
       if(l.cost>0) p.costo=l.cost;
       if(elegido&&l.precio>0) p.precio=l.precio;
+      if(!p.ref&&l.codigo&&String(p.barcode||'').trim().toLowerCase()!==String(l.codigo).trim().toLowerCase()) p.ref=_gmClean(l.codigo);
       sumados++;
     } else {
-      p={id:uid(),nombre:nombre,barcode:_gmClean(l.codigo||''),categoria:l.categoria||'Otro',costo:l.cost||0,precio:l.precio||0,stock:l.qty,stockMin:2,unidad:'Unidad',icono:l.icono||'package',fechaCreacion:hoy};
+      p={id:uid(),nombre:nombre,barcode:'',ref:_gmClean(l.codigo||''),categoria:l.categoria||'Otro',costo:l.cost||0,precio:l.precio||0,stock:l.qty,stockMin:2,unidad:'Unidad',icono:l.icono||'package',fechaCreacion:hoy};
       state.products.push(p); creados++; p._nuevoCp=true;
     }
     items.push({productoId:p.id,nombre:nombre,qty:l.qty,costo:l.cost||0,precio:p.precio||0,nuevo:!!p._nuevoCp});
