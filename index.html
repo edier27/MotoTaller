@@ -1165,12 +1165,13 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
 </div>
 
 <div class="modal-overlay" id="m-prov-order">
-  <div class="modal"><div class="modal-head"><div class="modal-title" id="prov-order-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Hacer Pedido</div><button class="modal-close" onclick="closeModal('m-prov-order')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="modal"><div class="modal-head"><div class="modal-title" id="prov-order-title"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Hacer Pedido</div><button class="modal-close" onclick="provCerrarPedido()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="modal-body"><input type="hidden" id="prov-order-id">
     <div id="prov-order-info" style="font-size:12px;color:var(--ink3);margin-bottom:12px;"></div>
-    <div class="form-group"><label class="form-label">¿Qué necesitas pedir?</label><textarea class="form-control" id="prov-order-text" rows="5" placeholder="Ej:&#10;- 4 pastillas de freno Honda CB&#10;- 2 litros aceite 20W50&#10;- 1 kit de arrastre"></textarea></div>
+    <div class="form-group"><label class="form-label">¿Qué necesitas pedir?</label><textarea class="form-control" id="prov-order-text" rows="5" oninput="provGuardarBorrador()" onchange="provGuardarBorrador(true)" placeholder="Ej:&#10;- 4 pastillas de freno Honda CB&#10;- 2 litros aceite 20W50&#10;- 1 kit de arrastre"></textarea>
+      <div style="font-size:11px;color:var(--ink3);margin-top:5px;">Lo que escribes queda guardado hasta que lo envíes, aunque cierres esta ventana.</div></div>
   </div>
-  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('m-prov-order')">Cancelar</button><button class="btn btn-wa" onclick="provEnviarPedido()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar por WhatsApp</button></div></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="provLimpiarPedido()">Limpiar</button><button class="btn btn-secondary" onclick="provCerrarPedido()">Cerrar</button><button class="btn btn-wa" onclick="provEnviarPedido()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar por WhatsApp</button></div></div>
 </div>
 
 <div class="modal-overlay" id="m-add-prod">
@@ -3860,9 +3861,32 @@ function provAbrirPedido(id){
       +'</div>';
   }
   document.getElementById('prov-order-info').innerHTML=info;
-  document.getElementById('prov-order-text').value='';
+  document.getElementById('prov-order-text').value=prov.pedidoBorrador||'';
   openModal('m-prov-order');
 }
+// Lo que se escribe en el pedido queda guardado en el proveedor: no se pierde
+// al cerrar la ventana ni el software, y se ve en los demas equipos.
+var _provBorradorTimer=null,_provBorradorPend=false;
+function provGuardarBorrador(ya){
+  var ta=document.getElementById('prov-order-text'), id=document.getElementById('prov-order-id').value;
+  var prov=(state.proveedores||[]).find(function(p){ return p.id===id; });
+  if(ta&&prov){
+    var t=_gmClean(ta.value||'');
+    if((prov.pedidoBorrador||'')!==t){ prov.pedidoBorrador=t; _provBorradorPend=true; }
+  }
+  if(!_provBorradorPend) return;
+  clearTimeout(_provBorradorTimer);
+  var guardar=function(){ _provBorradorPend=false; saveState(); };
+  if(ya===true) guardar(); else _provBorradorTimer=setTimeout(guardar,500);
+}
+function provCerrarPedido(){ provGuardarBorrador(true); closeModal('m-prov-order'); }
+function provLimpiarPedido(){
+  var ta=document.getElementById('prov-order-text');
+  if(!(ta.value||'').trim()) return;
+  if(!confirm('¿Borrar lo escrito en este pedido?')) return;
+  ta.value=''; provGuardarBorrador(true); ta.focus();
+}
+window.addEventListener('pagehide',function(){ var m=document.getElementById('m-prov-order'); if(m&&m.classList.contains('open')) provGuardarBorrador(true); });
 function provEnviarPedido(){
   var id=document.getElementById('prov-order-id').value;
   var prov=(state.proveedores||[]).find(function(p){ return p.id===id; });
@@ -3873,7 +3897,8 @@ function provEnviarPedido(){
   var accBlock=(prov.accounts||[]).length?('\n\n*Cuentas para consignar:*\n'+prov.accounts.map(function(a){ return '• '+a.type+': '+a.number+(a.holder?' ('+a.holder+')':''); }).join('\n')):'';
   var msg='*PEDIDO - '+tienda+'*\n\n'+draft+accBlock+'\n\n_Enviado desde '+tienda+'_';
   window.open('https://wa.me/'+prov.whatsapp+'?text='+encodeURIComponent(msg),'_blank');
-  closeModal('m-prov-order');
+  document.getElementById('prov-order-text').value='';   // enviado: el siguiente pedido empieza en blanco
+  provCerrarPedido();
   toast('Abriendo WhatsApp...','success');
 }
 
@@ -4316,7 +4341,46 @@ function _gmBuscarProducto(nombre,codigo){
       if(corto.length>=5&&largo.indexOf(corto)>=0&&corto.length/largo.length>=0.6) parcial=p;
     }
   });
-  return exacto||parcial;
+  return exacto||parcial||_gmBuscarParecido(n,prods);
+}
+// La factura casi nunca trae el nombre igual al del inventario ("PASTILLA FRENO
+// DEL. AKT 125" vs "Pastillas de freno delanteras AKT 125"). Se compara palabra
+// por palabra; las medidas y referencias (palabras con numeros) deben coincidir todas.
+// Letras y numeros pegados se separan para que "CT100" sea igual a "CT 100".
+function _gmPalabras(n){
+  return n.replace(/([a-z])(\d)/g,'$1 $2').replace(/(\d)([a-z])/g,'$1 $2').split(' ').filter(function(w){ return w&&!/^(de|la|el|los|las|para|con|por|y|x|und|unidad|unidades|ref)$/.test(w); })
+    .map(function(w){ return (!/\d/.test(w)&&w.length>3)?w.replace(/s$/,''):w; });
+}
+function _gmBuscarParecido(n,prods){
+  var a=_gmPalabras(n); if(a.length<2) return null;
+  var numA=a.filter(function(w){return /\d/.test(w);}).sort().join(' ');
+  var igual=function(x,y){
+    if(x===y) return true;
+    if(/\d/.test(x)||/\d/.test(y)) return false;
+    var c=x.length<=y.length?x:y, l=x.length<=y.length?y:x;
+    return c.length>=3&&l.indexOf(c)===0;                    // abreviaturas: "del" ~ "delantera"
+  };
+  // Solo vale si un nombre es el otro con palabras de mas ("mobil" vs "motul" o
+  // "tras" vs "delantera" no pasan) y si no hay dos productos igual de parecidos.
+  var mejor=null,punt=0,empate=false;
+  prods.forEach(function(p){
+    var b=_gmPalabras(_gmNorm(p.nombre)); if(b.length<2) return;
+    if(b.filter(function(w){return /\d/.test(w);}).sort().join(' ')!==numA) return;
+    var libres=b.slice(), ok=0;
+    a.forEach(function(w){ for(var i=0;i<libres.length;i++){ if(igual(w,libres[i])){ libres.splice(i,1); ok++; return; } } });
+    var s=ok/Math.max(a.length,b.length);
+    if(ok<2||ok<Math.min(a.length,b.length)||s<0.6) return;
+    if(s>punt){ punt=s; mejor=p; empate=false; }
+    else if(s===punt) empate=true;
+  });
+  return empate?null:mejor;
+}
+// Mismo producto con seguridad: mismo codigo o mismo nombre.
+function _gmProductoIgual(nombre,codigo){
+  var c=String(codigo||'').trim().toLowerCase(), n=_gmNorm(nombre);
+  return (state.products||[]).find(function(p){
+    return (c&&String(p.barcode||'').trim().toLowerCase()===c)||(n.length>=3&&_gmNorm(p.nombre)===n);
+  })||null;
 }
 function _gmAdivinarCategoria(n){
   n=_gmNorm(n);
@@ -4407,7 +4471,8 @@ function cpArchivo(inp){
       _cp.lineas=r.items.map(function(it){ return _cpNuevaLinea(it.name,it.codigo,it.qty,it.cost); });
       _cpPrepararPaso2(r);
       var nuevos=_cp.lineas.filter(function(l){return !l.matchId;}).length;
-      _cpAviso('Se leyeron '+_cp.lineas.length+' productos'+(nuevos?' ('+nuevos+' no están en tu inventario y se crearán)':'')+'. Revisa cantidades y costos antes de cargar.');
+      var ya=_cp.lineas.length-nuevos;
+      _cpAviso('Se leyeron '+_cp.lineas.length+' productos: '+ya+' ya están en tu inventario (solo se suma el stock)'+(nuevos?' y '+nuevos+' no están y se crearán':'')+'. Revisa cantidades y costos antes de cargar.');
     });
   }).catch(function(e){
     _cp.leyendo=false;
@@ -4639,7 +4704,7 @@ function _cpRender(enfocarUltima){
       +'<td><input class="form-control" value="'+_gmEsc(l.nombre)+'" placeholder="Descripción" oninput="cpSet('+i+',\'nombre\',this.value)" onchange="cpReemparejar('+i+')">'
         +(l.matchId?'':'<select class="form-control cp-cat" onchange="cpSet('+i+',\'categoria\',this.value)">'+cats.map(function(c){return '<option'+(c===l.categoria?' selected':'')+'>'+c+'</option>';}).join('')+'</select>')+'</td>'
       +'<td><select class="form-control" onchange="cpEmparejar('+i+',this.value)">'+opts(l.matchId)+'</select>'
-        +(prod?'<div class="cp-sub">Queda en '+(prod.stock+(l.qty||0))+' und</div>':'<div class="cp-sub cp-nuevo">Nuevo en inventario</div>')+'</td>'
+        +(prod?'<div class="cp-sub">Ya está en inventario: tiene '+(Number(prod.stock)||0)+', queda en '+((Number(prod.stock)||0)+(l.qty||0))+' und</div>':'<div class="cp-sub cp-nuevo">Nuevo en inventario</div>')+'</td>'
       +'<td class="r"><input class="form-control r" type="number" min="0" value="'+(l.qty||'')+'" oninput="cpSet('+i+',\'qty\',this.value)"></td>'
       +'<td class="r"><input class="form-control r" type="number" min="0" value="'+(l.cost||'')+'" oninput="cpSet('+i+',\'cost\',this.value)"></td>'
       +'<td class="r"><input class="form-control r" type="number" min="0" value="'+(l.precio||'')+'" oninput="cpSet('+i+',\'precio\',this.value)"></td>'
@@ -4689,17 +4754,21 @@ function cpConfirmar(){
   val.forEach(function(l){
     var nombre=_gmClean(String(l.nombre).trim());
     var p=l.matchId&&(state.products||[]).find(function(x){return x.id===l.matchId;});
+    var elegido=!!p;
+    // Si ya existe (o la factura lo trae repetido) se suma al stock en vez de duplicarlo
+    if(!p) p=_gmProductoIgual(nombre,l.codigo);
     if(p){
       p.stock=(Number(p.stock)||0)+l.qty;
       if(l.cost>0) p.costo=l.cost;
-      if(l.precio>0) p.precio=l.precio;
+      if(elegido&&l.precio>0) p.precio=l.precio;
       sumados++;
     } else {
       p={id:uid(),nombre:nombre,barcode:_gmClean(l.codigo||''),categoria:l.categoria||'Otro',costo:l.cost||0,precio:l.precio||0,stock:l.qty,stockMin:2,unidad:'Unidad',icono:l.icono||'package',fechaCreacion:hoy};
-      state.products.push(p); creados++;
+      state.products.push(p); creados++; p._nuevoCp=true;
     }
-    items.push({productoId:p.id,nombre:nombre,qty:l.qty,costo:l.cost||0,precio:p.precio||0,nuevo:!l.matchId});
+    items.push({productoId:p.id,nombre:nombre,qty:l.qty,costo:l.cost||0,precio:p.precio||0,nuevo:!!p._nuevoCp});
   });
+  state.products.forEach(function(x){ delete x._nuevoCp; });
   var total=items.reduce(function(s,i){ return s+i.qty*i.costo; },0);
   var compra={id:uid(),fecha:nowDT(),fechaFactura:fechaF,proveedor:prov,numero:num,items:items,total:total,foto:null,gasto:document.getElementById('cp-gasto').checked};
   state.compras=state.compras||[];
