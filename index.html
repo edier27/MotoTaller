@@ -4362,8 +4362,9 @@ var GM_FACTURA_PROMPT=
   'Lees facturas de compra de un taller de motos en Colombia (repuestos, lubricantes, llantas, accesorios). '+
   'Extrae UNICAMENTE las lineas de producto de la factura de la imagen. '+
   'Devuelve SOLO un objeto JSON con esta forma exacta: '+
-  '{"proveedor":"","numero":"","fecha":"","items":[{"name":"","codigo":"","qty":1,"cost":0}]}. '+
-  'Reglas: "name" es la descripcion del producto tal como aparece; "codigo" es la referencia o codigo del producto si aparece, si no cadena vacia; '+
+  '{"proveedor":"","numero":"","fecha":"","items":[{"name":"","codigo":"","barras":"","qty":1,"cost":0}]}. '+
+  'Reglas: "name" es la descripcion del producto tal como aparece; "codigo" es la referencia o codigo del producto que usa el proveedor si aparece, si no cadena vacia; '+
+  '"barras" es el codigo de barras del producto (EAN/UPC, solo digitos, de 8 a 14 cifras) si la factura lo trae en una columna aparte, si no cadena vacia; no repitas en "barras" lo mismo que en "codigo"; '+
   '"qty" es la cantidad (numero entero); "cost" es el precio UNITARIO de compra como numero entero en pesos, sin puntos, comas ni simbolos; '+
   'si solo aparece el valor total de la linea, dividelo entre la cantidad; si el precio unitario aparece sin IVA y la factura discrimina IVA por linea, usa el valor unitario con IVA. '+
   '"numero" es el numero de la factura; "fecha" en formato YYYY-MM-DD si se ve, si no cadena vacia. '+
@@ -4380,10 +4381,17 @@ function _numCO(v){
   var n=Number(s); return isFinite(n)?n:0;
 }
 function _gmNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
-function _gmBuscarProducto(nombre,codigo){
+function _gmPorCodigo(codigo,barras){
+  var cs=[codigo,barras].map(function(x){ return String(x||'').trim().toLowerCase(); }).filter(Boolean);
+  if(!cs.length) return null;
+  return (state.products||[]).find(function(p){
+    var r=String(p.ref||'').trim().toLowerCase(), b=String(p.barcode||'').trim().toLowerCase();
+    return cs.some(function(c){ return c===r||c===b; });
+  })||null;
+}
+function _gmBuscarProducto(nombre,codigo,barras){
   var prods=state.products||[];
-  var c=String(codigo||'').trim().toLowerCase();
-  if(c){ var porCod=prods.find(function(p){ return String(p.ref||'').trim().toLowerCase()===c||String(p.barcode||'').trim().toLowerCase()===c; }); if(porCod) return porCod; }
+  var porCod=_gmPorCodigo(codigo,barras); if(porCod) return porCod;
   var n=_gmNorm(nombre); if(n.length<3) return null;
   var exacto=null,parcial=null;
   prods.forEach(function(p){
@@ -4429,11 +4437,9 @@ function _gmBuscarParecido(n,prods){
   return empate?null:mejor;
 }
 // Mismo producto con seguridad: mismo codigo o mismo nombre.
-function _gmProductoIgual(nombre,codigo){
-  var c=String(codigo||'').trim().toLowerCase(), n=_gmNorm(nombre);
-  return (state.products||[]).find(function(p){
-    return (c&&(String(p.ref||'').trim().toLowerCase()===c||String(p.barcode||'').trim().toLowerCase()===c))||(n.length>=3&&_gmNorm(p.nombre)===n);
-  })||null;
+function _gmProductoIgual(nombre,codigo,barras){
+  var n=_gmNorm(nombre);
+  return _gmPorCodigo(codigo,barras)||(state.products||[]).find(function(p){ return n.length>=3&&_gmNorm(p.nombre)===n; })||null;
 }
 function _gmAdivinarCategoria(n){
   n=_gmNorm(n);
@@ -4471,7 +4477,7 @@ function _gmLeerFacturaIA(blob,mime){
     if(!t) throw new Error('No se pudo leer la factura. Intenta con una foto más nítida y con buena luz.');
     var p; try{ p=JSON.parse(t); }catch(e){ throw new Error('La respuesta de la lectura no fue válida. Intenta de nuevo.'); }
     var items=((p&&p.items)||[]).map(function(it){
-      return {name:String(it.name||'').trim(),codigo:String(it.codigo||'').trim(),qty:Math.max(0,Math.round(_numCO(it.qty))),cost:Math.max(0,Math.round(_numCO(it.cost)))};
+      return {name:String(it.name||'').trim(),codigo:String(it.codigo||'').trim(),barras:String(it.barras||'').replace(/\s/g,''),qty:Math.max(0,Math.round(_numCO(it.qty))),cost:Math.max(0,Math.round(_numCO(it.cost)))};
     }).filter(function(it){ return it.name&&it.qty>0; });
     if(!items.length) throw new Error('No se reconoció ningún producto en la factura.');
     return {proveedor:String(p.proveedor||'').trim(),numero:String(p.numero||'').trim(),fecha:String(p.fecha||'').trim(),items:items};
@@ -4521,7 +4527,7 @@ function cpArchivo(inp){
     _cp.leyendo=true;
     return _gmLeerFacturaIA(p.blob,p.mime).then(function(r){
       _cp.leyendo=false;
-      _cp.lineas=r.items.map(function(it){ return _cpNuevaLinea(it.name,it.codigo,it.qty,it.cost); });
+      _cp.lineas=r.items.map(function(it){ return _cpNuevaLinea(it.name,it.codigo,it.qty,it.cost,it.barras); });
       _cpPrepararPaso2(r);
       var nuevos=_cp.lineas.filter(function(l){return !l.matchId;}).length;
       var ya=_cp.lineas.length-nuevos;
@@ -4535,10 +4541,10 @@ function cpArchivo(inp){
   });
 }
 function _cpAviso(t){ var a=document.getElementById('cp-aviso'); a.style.display=t?'flex':'none'; a.innerHTML=t?ic('clipboard')+'<div>'+_gmEsc(t)+'</div>':''; }
-function _cpNuevaLinea(nombre,codigo,qty,cost){
-  var m=nombre?_gmBuscarProducto(nombre,codigo):null;
+function _cpNuevaLinea(nombre,codigo,qty,cost,barras){
+  var m=nombre?_gmBuscarProducto(nombre,codigo,barras):null;
   var cat=_gmAdivinarCategoria(nombre);
-  return {nombre:nombre||'',codigo:codigo||'',qty:qty||1,cost:cost||0,matchId:m?m.id:'',precio:m?(m.precio||0):0,precioManual:!!m,categoria:cat.categoria,icono:cat.icono};
+  return {nombre:nombre||'',codigo:codigo||'',barras:barras||'',qty:qty||1,cost:cost||0,matchId:m?m.id:'',precio:m?(m.precio||0):0,precioManual:!!m,categoria:cat.categoria,icono:cat.icono};
 }
 function cpAgregarLinea(sinRender){ _cp.lineas.push(_cpNuevaLinea('','',1,0)); if(sinRender!==true) _cpRender(true); }
 function _cpPrepararPaso2(r){
@@ -4755,6 +4761,10 @@ function _cpRender(enfocarUltima){
     var prod=l.matchId&&(state.products||[]).find(function(p){return p.id===l.matchId;});
     return '<tr>'
       +'<td><input class="form-control" value="'+_gmEsc(l.nombre)+'" placeholder="Descripción" oninput="cpSet('+i+',\'nombre\',this.value)" onchange="cpReemparejar('+i+')">'
+        +'<div style="display:flex;gap:5px;">'
+          +'<input class="form-control cp-cat" style="flex:1;min-width:0;" value="'+_gmEsc(l.codigo||'')+'" placeholder="'+_gmEsc((prod&&prod.ref)||'Código proveedor')+'" title="Código del proveedor (referencia)" oninput="cpSet('+i+',\'codigo\',this.value)" onchange="cpReemparejar('+i+')">'
+          +'<input class="form-control cp-cat" style="flex:1;min-width:0;" value="'+_gmEsc(l.barras||'')+'" placeholder="'+_gmEsc((prod&&prod.barcode)||'Código de barras')+'" title="Código de barras" oninput="cpSet('+i+',\'barras\',this.value)" onchange="cpReemparejar('+i+')">'
+        +'</div>'
         +(l.matchId?'':'<select class="form-control cp-cat" onchange="cpSet('+i+',\'categoria\',this.value)">'+cats.map(function(c){return '<option'+(c===l.categoria?' selected':'')+'>'+c+'</option>';}).join('')+'</select>')+'</td>'
       +'<td><select class="form-control" onchange="cpEmparejar('+i+',this.value)">'+opts(l.matchId)+'</select>'
         +(prod?'<div class="cp-sub">Ya está en inventario: tiene '+(Number(prod.stock)||0)+', queda en '+((Number(prod.stock)||0)+(l.qty||0))+' und</div>':'<div class="cp-sub cp-nuevo">Nuevo en inventario</div>')+'</td>'
@@ -4773,12 +4783,12 @@ function cpSet(i,k,v){
   if(k==='qty'||k==='cost'||k==='precio') v=Math.max(0,Math.round(parseFloat(v)||0));
   l[k]=v;
   if(k==='precio') l.precioManual=true;
-  if(k==='cost'&&!l.matchId&&!l.precioManual){ var mg=parseFloat(document.getElementById('cp-margen').value)||0; l.precio=_gmRedondear(l.cost*(1+mg/100)); var tr=document.getElementById('cp-lineas').children[i]; if(tr){ var pin=tr.querySelectorAll('input')[3]; if(pin) pin.value=l.precio||''; } }
+  if(k==='cost'&&!l.matchId&&!l.precioManual){ var mg=parseFloat(document.getElementById('cp-margen').value)||0; l.precio=_gmRedondear(l.cost*(1+mg/100)); var tr=document.getElementById('cp-lineas').children[i]; if(tr){ var pin=tr.querySelectorAll('input')[5]; if(pin) pin.value=l.precio||''; } }
   if(k==='nombre'&&!l.matchId){ var c=_gmAdivinarCategoria(v); l.categoria=c.categoria; l.icono=c.icono; }
   var st=document.getElementById('cp-st-'+i); if(st) st.textContent=fmt((l.qty||0)*(l.cost||0));
   _cpResumen();
 }
-function cpReemparejar(i){ var l=_cp.lineas[i]; if(!l||l.matchId) return; var m=_gmBuscarProducto(l.nombre,l.codigo); if(m){ cpEmparejar(i,m.id); } }
+function cpReemparejar(i){ var l=_cp.lineas[i]; if(!l||l.matchId) return; var m=_gmBuscarProducto(l.nombre,l.codigo,l.barras); if(m){ cpEmparejar(i,m.id); } }
 function cpEmparejar(i,id){
   var l=_cp.lineas[i]; if(!l) return;
   l.matchId=id||'';
@@ -4809,15 +4819,18 @@ function cpConfirmar(){
     var p=l.matchId&&(state.products||[]).find(function(x){return x.id===l.matchId;});
     var elegido=!!p;
     // Si ya existe (o la factura lo trae repetido) se suma al stock en vez de duplicarlo
-    if(!p) p=_gmProductoIgual(nombre,l.codigo);
+    if(!p) p=_gmProductoIgual(nombre,l.codigo,l.barras);
+    var cod=_gmClean(String(l.codigo||'').trim()), bar=_gmClean(String(l.barras||'').trim());
     if(p){
       p.stock=(Number(p.stock)||0)+l.qty;
       if(l.cost>0) p.costo=l.cost;
       if(elegido&&l.precio>0) p.precio=l.precio;
-      if(!p.ref&&l.codigo&&String(p.barcode||'').trim().toLowerCase()!==String(l.codigo).trim().toLowerCase()) p.ref=_gmClean(l.codigo);
+      // Al producto que ya existe solo se le completan los codigos que le faltan
+      if(!p.ref&&cod&&String(p.barcode||'').trim().toLowerCase()!==cod.toLowerCase()) p.ref=cod;
+      if(!p.barcode&&bar&&String(p.ref||'').trim().toLowerCase()!==bar.toLowerCase()) p.barcode=bar;
       sumados++;
     } else {
-      p={id:uid(),nombre:nombre,barcode:'',ref:_gmClean(l.codigo||''),categoria:l.categoria||'Otro',costo:l.cost||0,precio:l.precio||0,stock:l.qty,stockMin:2,unidad:'Unidad',icono:l.icono||'package',fechaCreacion:hoy};
+      p={id:uid(),nombre:nombre,barcode:bar,ref:cod,categoria:l.categoria||'Otro',costo:l.cost||0,precio:l.precio||0,stock:l.qty,stockMin:2,unidad:'Unidad',icono:l.icono||'package',fechaCreacion:hoy};
       state.products.push(p); creados++; p._nuevoCp=true;
     }
     items.push({productoId:p.id,nombre:nombre,qty:l.qty,costo:l.cost||0,precio:p.precio||0,nuevo:!!p._nuevoCp});
